@@ -104,7 +104,7 @@ create(Port,File,DSs,RRAs) when is_port(Port) ->
 %%               {'HWPREDICT',rows,alpha,beta,seasonal_period,rra_num} |
 %%               {'SEASONAL',seasonal_period,gamma,rra_num} |
 %%               {'DEVSEASONAL',seasonal_period,gamma,rra_num} |
-%%               {'DEVPREDICT',rows,rra_num}
+%%               {'DEVPREDICT',rows,rra_num} |
 %%               {'FAILURES',rows,threshold,window_len,rra_num}
 %% CF          = 'AVERAGE' | 'MIN' | 'MAX' | 'LAST'
 %% XFF         = float()
@@ -199,7 +199,7 @@ fetch(Port,File,CF,Res,Start,Stop) when is_port(Port) ->
 %% CDEF  = {Vname,Expr}
 %%
 %% VDEFs = [VDEF]
-%%       = {Vname,Expr}
+%% VDEF  = {Vname,Expr}
 %%
 %% VName = string
 %% Expr  = string
