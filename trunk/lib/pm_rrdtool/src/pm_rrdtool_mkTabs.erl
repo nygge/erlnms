@@ -1,9 +1,9 @@
 %%%-------------------------------------------------------------------
 %%% File    : pm_basic_mk_tabs.erl
-%%% Author  : Anders <anders@local>
+%%% Author  : Anders <anders.nygren@gmail.com>
 %%% Description : 
 %%%
-%%% Created : 14 Jun 2004 by Anders <anders@local>
+%%% Created : 14 Jun 2004 by Anders <anders.nygren@gmail.com>
 %%%-------------------------------------------------------------------
 -module(pm_rrdtool_mkTabs).
 

@@ -1,9 +1,9 @@
 %%%-------------------------------------------------------------------
 %%% File    : rrdtool_lock.erl
-%%% Author  : Anders <anders@local>
+%%% Author  : Anders <anders.nygren@gmail.com>
 %%% Description : 
 %%%
-%%% Created : 18 May 2004 by Anders <anders@local>
+%%% Created : 18 May 2004 by Anders <anders.nygren@gmail.com>
 %%%-------------------------------------------------------------------
 -module(rrdtool_lock).
 

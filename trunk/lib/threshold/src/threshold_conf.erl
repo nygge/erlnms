@@ -1,9 +1,9 @@
 %%%-------------------------------------------------------------------
 %%% File    : threshold_conf.erl
-%%% Author  : Anders Nygren <anders@our.domain.is.not.set>
+%%% Author  : Anders Nygren <anders.nygren@gmail.com>
 %%% Description : 
 %%%
-%%% Created :  6 Feb 2004 by Anders Nygren <anders@our.domain.is.not.set>
+%%% Created :  6 Feb 2004 by Anders Nygren <anders.nygren@gmail.com>
 %%%-------------------------------------------------------------------
 -module(threshold_conf).
 

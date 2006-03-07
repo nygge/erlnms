@@ -1,9 +1,9 @@
 %%%-------------------------------------------------------------------
 %%% File    : sup_pm_rrdtool.erl
-%%% Author  : Anders <anders@telteq.com.mx>
+%%% Author  : Anders <anders.nygren@gmail.com>
 %%% Description : 
 %%%
-%%% Created :  8 Jul 2005 by Anders <anders@telteq.com.mx>
+%%% Created :  8 Jul 2005 by Anders <anders.nygren@gmail.com>
 %%%-------------------------------------------------------------------
 -module(sup_pm_rrdtool).
 

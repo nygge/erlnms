@@ -1,9 +1,9 @@
 %%%-------------------------------------------------------------------
 %%% File    : rrd_info.erl
-%%% Author  : Anders Nygren <anders@local>
+%%% Author  : Anders Nygren <anders.nygren@gmail.com>
 %%% Description : 
 %%%
-%%% Created : 30 Aug 2003 by Anders Nygren <anders@local>
+%%% Created : 30 Aug 2003 by Anders Nygren <anders.nygren@gmail.com>
 %%%-------------------------------------------------------------------
 -module(rrd_info).
 

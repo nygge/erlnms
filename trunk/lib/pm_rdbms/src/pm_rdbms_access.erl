@@ -1,9 +1,9 @@
 %%%-------------------------------------------------------------------
 %%% File    : pm_rdbms_access.erl
-%%% Author  : Anders <anders@local>
+%%% Author  : Anders <anders.nygren@gmail.com>
 %%% Description : 
 %%%
-%%% Created :  5 Jun 2004 by Anders <anders@local>
+%%% Created :  5 Jun 2004 by Anders <anders.nygren@gmail.com>
 %%%-------------------------------------------------------------------
 -module(pm_rdbms_access).
 

@@ -1,9 +1,9 @@
 %%%-------------------------------------------------------------------
 %%% File    : sup_pm_basic.erl
-%%% Author  : Anders <anders@local>
+%%% Author  : Anders <anders.nygren@gmail.com>
 %%% Description : 
 %%%
-%%% Created :  5 Jun 2004 by Anders <anders@local>
+%%% Created :  5 Jun 2004 by Anders <anders.nygren@gmail.com>
 %%%-------------------------------------------------------------------
 -module(sup_pm_basic).
 

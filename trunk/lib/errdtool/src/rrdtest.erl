@@ -1,9 +1,9 @@
 %%%-------------------------------------------------------------------
 %%% File    : test.erl
-%%% Author  : Anders <anders@telteq.com.mx>
+%%% Author  : Anders <anders.nygren@gmail.com>
 %%% Description : 
 %%%
-%%% Created :  6 Jul 2005 by Anders <anders@telteq.com.mx>
+%%% Created :  6 Jul 2005 by Anders <anders.nygren@gmail.com>
 %%%-------------------------------------------------------------------
 -module(rrdtest).
 -export([xport/0]).
