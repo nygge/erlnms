@@ -1,0 +1,1 @@
+-record(new_pm_data,{moi,moc,int,time}).
