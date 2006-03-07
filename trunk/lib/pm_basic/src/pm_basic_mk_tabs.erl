@@ -1,9 +1,9 @@
 %%%-------------------------------------------------------------------
 %%% File    : pm_basic_mk_tabs.erl
-%%% Author  : Anders <anders.nygren@gmail.com>
+%%% Author  : Anders Nygren <anders.nygren@gmail.com>
 %%% Description : 
 %%%
-%%% Created : 14 Jun 2004 by Anders <anders.nygren@gmail.com>
+%%% Created : 14 Jun 2004 by Anders Nygren <anders.nygren@gmail.com>
 %%%-------------------------------------------------------------------
 -module(pm_basic_mk_tabs).
 

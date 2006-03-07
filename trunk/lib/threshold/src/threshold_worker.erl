@@ -1,9 +1,9 @@
 %%%-------------------------------------------------------------------
 %%% File    : threshold_worker.erl
-%%% Author  : Anders <anders.nygren@gmail.com>
+%%% Author  : Anders Nygren <anders.nygren@gmail.com>
 %%% Description : 
 %%%
-%%% Created : 16 Jun 2004 by Anders <anders.nygren@gmail.com>
+%%% Created : 16 Jun 2004 by Anders Nygren <anders.nygren@gmail.com>
 %%%-------------------------------------------------------------------
 -module(threshold_worker).
 

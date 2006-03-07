@@ -1,9 +1,9 @@
 %%%-------------------------------------------------------------------
 %%% File    : rrdtool_worker.erl
-%%% Author  : Anders <anders.nygren@gmail.com>
+%%% Author  : Anders Nygren <anders.nygren@gmail.com>
 %%% Description : 
 %%%
-%%% Created : 23 May 2004 by Anders <anders.nygren@gmail.com>
+%%% Created : 23 May 2004 by Anders Nygren <anders.nygren@gmail.com>
 %%%-------------------------------------------------------------------
 -module(rrdtool_worker).
 

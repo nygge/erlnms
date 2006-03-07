@@ -1,9 +1,9 @@
 %%%-------------------------------------------------------------------
 %%% File    : pm_config.erl
-%%% Author  : Anders <anders.nygren@gmail.com>
+%%% Author  : Anders Nygren <anders.nygren@gmail.com>
 %%% Description : 
 %%%
-%%% Created : 25 May 2004 by Anders <anders.nygren@gmail.com>
+%%% Created : 25 May 2004 by Anders Nygren <anders.nygren@gmail.com>
 %%%-------------------------------------------------------------------
 -module(pm_config).
 

@@ -1,9 +1,9 @@
 %%%-------------------------------------------------------------------
 %%% File    : sup_threshold.erl
-%%% Author  : Anders <anders.nygren@gmail.com>
+%%% Author  : Anders Nygren <anders.nygren@gmail.com>
 %%% Description : 
 %%%
-%%% Created :  18 Jun 2004 by Anders <anders.nygren@gmail.com>
+%%% Created :  18 Jun 2004 by Anders Nygren <anders.nygren@gmail.com>
 %%%-------------------------------------------------------------------
 -module(sup_threshold).
 
