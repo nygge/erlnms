@@ -1,12 +1,33 @@
-SUBDIRS	=	errdtool pm_basic pm_rrdtool threshold utils
+LIBS := \
+	errdtool \
+#	pm_basic \
+#	pm_rdbms \
+#	pm_rrdtool \
+#	threshold \
+#	utils
 
-#include ./include.mk
+all: $(LIBS)
+
+clean:
+	@for dir in $(LIBS); do \
+	  if [ ! -f $@/SKIP ]; then \
+	    (cd $$dir; $(MAKE) $@) \
+	  fi \
+	done
+
+$(LIBS):
+	@if [ ! -f $@/SKIP ]; then \
+	  (cd $@; $(MAKE) all) \
+	fi
+
+# Dependencies between programs.
+#errdtool
+#pm_basic
+#pm_rdbms
+#pm_rrdtool: errdtool pm_basic
+#threshold
+#utils
 
 
-all debug doc clean:	
-	@set -e ; \
-	  for d in $(SUBDIRS) ; do \
-	    if [ -f $$d/Makefile ]; then ( cd $$d && $(MAKE) $@ ) || exit 1 ; fi ; \
-	  done
-
+.PHONY: $(LIBS)
 
