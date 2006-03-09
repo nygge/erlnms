@@ -1,4 +1,4 @@
-SUBDIRS	=	errdtool pm_basic pm_rrdtool threshold
+SUBDIRS	=	errdtool pm_basic pm_rrdtool threshold utils
 
 #include ./include.mk
 
