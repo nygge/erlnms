@@ -72,9 +72,9 @@ create(Name,MOI,Store_type) when is_atom(name),is_list(MOI),is_atom(Store_type)-
 %% Result      = WHAT
 
 fetch(MOI,MOC,Counters,CF,Res) ->
-    Esecs=pm_config:datetime_to_epoch(calendar:universal_time()),
-    RSecs=pm_config:duration_to_seconds(Res),
-    Time=pm_config:epoch_to_datetime((Esecs div RSecs) * RSecs),
+    Esecs=utils:datetime_to_epoch(calendar:universal_time()),
+    RSecs=utils:duration_to_seconds(Res),
+    Time=utils:epoch_to_datetime((Esecs div RSecs) * RSecs),
     fetch(MOI,MOC,Counters,CF,Res,Time,Time).
 
 % fetch(MOI,MOC,Res,Start,Stop) ->
@@ -95,9 +95,9 @@ fetch(MOI,MOC,Counters,CF,Res) ->
 %% Result      = WHAT
 
 fetch(MOI,MOC,Counters,CF,Res,Rows,Stop) when is_integer(Rows),Rows>0 ->
-    S=pm_config:datetime_to_epoch(Stop),
-    D=(Rows-1)*pm_config:duration_to_seconds(Res),
-    Start=pm_config:epoch_to_datetime(S-D),
+    S=utils:datetime_to_epoch(Stop),
+    D=(Rows-1)*utils:duration_to_seconds(Res),
+    Start=utils:epoch_to_datetime(S-D),
     fetch(MOI,MOC,Counters,CF,Res,Start,Stop);
 
 %% @spec fetch(MOI,MOC,Counters,Res,Start,Stop) -> Result

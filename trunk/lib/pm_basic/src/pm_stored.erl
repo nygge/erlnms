@@ -134,8 +134,8 @@ process_data(#pm_rec{moi=MOI,moc=MOC,time=Time,data=Data}) ->
 
 check_time(TS,EInt,Step) ->
     Secs=calendar:datetime_to_gregorian_seconds(TS),
-    StepSecs=pm_config:duration_to_seconds(Step),
-    ESecs=pm_config:duration_to_seconds(EInt),
+    StepSecs=utils:duration_to_seconds(Step),
+    ESecs=utils:duration_to_seconds(EInt),
     Latest=ESecs*(Secs div ESecs),
     case (Secs-Latest)<StepSecs of
 	true ->

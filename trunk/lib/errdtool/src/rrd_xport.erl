@@ -59,13 +59,13 @@ flags_to_binary(Flags) ->
 	      Flags).
 
 flag_to_binary({start,T}) ->
-    mk_flag("s",rrd_lib_utils:datetime_to_epoch(T));
+    mk_flag("s",utils:datetime_to_epoch(T));
 flag_to_binary({'end',T}) ->
-    mk_flag("e",rrd_lib_utils:datetime_to_epoch(T));
+    mk_flag("e",utils:datetime_to_epoch(T));
 flag_to_binary({maxrows,P}) ->
     mk_flag("m",P);
 flag_to_binary({step,P}) ->
-    mk_flag("step",rrd_lib_utils:duration_to_seconds(P)).
+    mk_flag("step",utils:duration_to_seconds(P)).
 
 mk_flag(Flag,Value) ->
     Sign=case length(Flag) of
@@ -104,20 +104,20 @@ parse_res(Res) ->
     Data=lists:sublist(D,2,DL-3),
     D1=lists:map(fun(R) ->
 			 [TS|Ds]=string:tokens(R,"<>/tvrow"),
-			 {rrd_lib_utils:epoch_to_datetime(list_to_integer(TS)),
+			 {utils:epoch_to_datetime(list_to_integer(TS)),
 			  cnt_to_val(Ds)}
 		 end,
 		 Data),
     {Meta,D1}.
 
 parse_meta([("<start>"++M)=Line|More]) ->
-    R={start,rrd_lib_utils:epoch_to_datetime(parse_line_int(Line))},
+    R={start,utils:epoch_to_datetime(parse_line_int(Line))},
     [R|parse_meta(More)];
 parse_meta([("<end>"++M)=Line|More]) ->
-    R={'end',rrd_lib_utils:epoch_to_datetime(parse_line_int(Line))},
+    R={'end',utils:epoch_to_datetime(parse_line_int(Line))},
     [R|parse_meta(More)];
 parse_meta([("<step>"++M)=Line|More]) ->
-    R={'step',rrd_lib_utils:seconds_to_duration(parse_line_int(Line))},
+    R={'step',utils:seconds_to_duration(parse_line_int(Line))},
     [R|parse_meta(More)];
 parse_meta([("<rows>"++M)=Line|More]) ->
     R={rows,parse_line_int(Line)},

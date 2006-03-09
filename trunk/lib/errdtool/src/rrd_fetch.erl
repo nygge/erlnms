@@ -10,15 +10,15 @@
 -export([do_fetch/6]).
 
 do_fetch(Port,File,CF,Res,latest,latest) ->
-    Esecs=rrd_lib_utils:datetime_to_epoch(calendar:universal_time()),
-    RSecs=rrd_lib_utils:duration_to_seconds(Res),
-    Time=rrd_lib_utils:epoch_to_datetime((Esecs div RSecs) * RSecs),
+    Esecs=utils:datetime_to_epoch(calendar:universal_time()),
+    RSecs=utils:duration_to_seconds(Res),
+    Time=utils:epoch_to_datetime((Esecs div RSecs) * RSecs),
     do_fetch(Port,File,CF,Res,Time,Time);
 
 do_fetch(Port,File,CF,Res,Start,Stop) ->
-    RSecs=rrd_lib_utils:duration_to_seconds(Res),
-    StartSec=rrd_lib_utils:datetime_to_epoch(Start),
-    StopSec=rrd_lib_utils:datetime_to_epoch(Stop),
+    RSecs=utils:duration_to_seconds(Res),
+    StartSec=utils:datetime_to_epoch(Start),
+    StopSec=utils:datetime_to_epoch(Stop),
     do_fetch1(Port,File,CF,RSecs,StartSec,StopSec).
 
 do_fetch1(Port,File,CF,Resolution,Start,Stop) ->
@@ -56,7 +56,7 @@ parse_res(Res) ->
 parse_vals([],_) ->
     [];
 parse_vals([TS|More],NoVals) ->
-    Time=rrd_lib_utils:epoch_to_datetime(
+    Time=utils:epoch_to_datetime(
  	   list_to_integer(TS-- ":")),
     {CNTs,Rest}=parse_cnt(More,NoVals,[]),
     [{Time,lists:reverse(CNTs)}|parse_vals(Rest,NoVals)].

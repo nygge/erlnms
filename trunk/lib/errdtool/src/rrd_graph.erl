@@ -26,9 +26,9 @@ flags_to_binary(Flags) ->
 	      end, Flags).
 
 flag_to_binary({start,T}) ->
-    mk_flag("s",rrd_lib_utils:datetime_to_epoch(T));
+    mk_flag("s",utils:datetime_to_epoch(T));
 flag_to_binary({'end',T}) ->
-    mk_flag("e",rrd_lib_utils:datetime_to_epoch(T));
+    mk_flag("e",utils:datetime_to_epoch(T));
 flag_to_binary({x_grid,P}) ->
     mk_flag("x",P);
 flag_to_binary({y_grid,P}) ->

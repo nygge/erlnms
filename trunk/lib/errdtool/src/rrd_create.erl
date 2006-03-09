@@ -65,11 +65,11 @@ opts_to_binary(Opts) ->
 
 opt_to_binary({start,DateTime}) ->
     [<<"-b ">>,
-     rrd_lib_utils:val_to_binary(rrd_lib_utils:datetime_to_epoch(DateTime)),
+     rrd_lib_utils:val_to_binary(utils:datetime_to_epoch(DateTime)),
      <<" ">>];
 opt_to_binary({step,Duration}) ->
     [<<"-s ">>,
-     rrd_lib_utils:duration_to_binary(Duration),
+     utils:duration_to_binary(Duration),
      <<" ">>].
 
 dss_to_binary(DSs) ->
@@ -79,7 +79,7 @@ dss_to_binary(DSs) ->
 
 ds_to_binary({Name,DST,HB,Min,Max}) ->
     [rrd_lib_utils:vals_to_binary(["DS",Name,DST,
-				   rrd_lib_utils:duration_to_seconds(HB),
+				   utils:duration_to_seconds(HB),
 				   Min,Max
 				   ],":"),
      <<" ">>];
@@ -94,8 +94,8 @@ rras_to_binary(SampleInt,RRAs) ->
 	      end, RRAs).
 
 rra_to_binary(SampleInt,{CF,XFF,ConsInt,Capacity}) when is_tuple(Capacity) ->
-    Step=rrd_lib_utils:duration_div(ConsInt,SampleInt),
-    Rows=rrd_lib_utils:duration_div(Capacity,ConsInt),
+    Step=utils:duration_div(ConsInt,SampleInt),
+    Rows=utils:duration_div(Capacity,ConsInt),
     [rrd_lib_utils:vals_to_binary(["RRA",CF,
 				   XFF,
 				   Step,

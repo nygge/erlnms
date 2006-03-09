@@ -43,8 +43,8 @@ parse_result(Res) ->
     FileName={filename,FN},
     Version={version,Vers},
     StepSecs=list_to_integer(St),
-    Step={step,rrd_lib_utils:seconds_to_duration(StepSecs)},
-    LastUpdate={lastupdate,rrd_lib_utils:epoch_to_datetime(
+    Step={step,utils:seconds_to_duration(StepSecs)},
+    LastUpdate={lastupdate,utils:epoch_to_datetime(
 			     list_to_integer(Last))},
     {DSs,Rest}=parse_dss(More),
     RSs=parse_rra(Rest,StepSecs),
@@ -62,7 +62,7 @@ parse_ds(Acc,[[T1,Type1],[T2,HB1],[T3,Min1],[T4,Max1],
 	      [T5,Last1],[T6,Val],[T7,Unknown]|DSs]) ->
     DS=get_ds(T1),
     Type={type,list_to_atom(Type1)},
-    HB={heartbeat,rrd_lib_utils:seconds_to_duration(list_to_integer(HB1))},
+    HB={heartbeat,utils:seconds_to_duration(list_to_integer(HB1))},
     Min={min,minmax_to_val(Min1)},
     Max={max,minmax_to_val(Max1)},
     Last={last,last_to_val(Last1)},
@@ -95,8 +95,8 @@ parse_rra([[T1,CF1],[T2,Rows1],[T3,Pdppr],[T4,XFF1]|More],Step) ->
     CF={cf,list_to_atom(CF1)},
     Rows=list_to_integer(Rows1),
     PperSampl=list_to_integer(Pdppr),
-    DUR={duration,rrd_lib_utils:seconds_to_duration(Rows*Step*PperSampl)},
-    RES={res,rrd_lib_utils:seconds_to_duration(Step*PperSampl)},
+    DUR={duration,utils:seconds_to_duration(Rows*Step*PperSampl)},
+    RES={res,utils:seconds_to_duration(Step*PperSampl)},
     XFF={xff,list_to_float(XFF1)},
     Rest=eat_cdp_prep(RRA,More),
     [{CF,DUR,RES,XFF}|parse_rra(Rest,Step)];
