@@ -15,20 +15,10 @@
 
 -define(SERVER,?MODULE).
 
--define(MINUTE,60).
--define(HOUR,60*?MINUTE).
--define(DAY,24*?HOUR).
--define(WEEK,7*?DAY).
--define(MONTH,31*?DAY).
--define(YEAR,366*?DAY).
-
 
 %%--------------------------------------------------------------------
 %% External exports
 -export([start_link/0,start_link/1,
-	 datetime_to_epoch/1,
-	 epoch_to_datetime/1,
-	 duration_to_seconds/1,
 	 get_db_backend/2,
 	 get_duration/1,
 	 get_events/2
@@ -163,29 +153,3 @@ read_tab(Table,Key) ->
 %% 	      mnesia:write(Record)
 %%       end,
 %%     mnesia:transaction(F).
-
-
-datetime_to_epoch({{_Y,_Mo,_D},{_H,_Mi,_pmS}}=DateTime) ->
-    calendar:datetime_to_gregorian_seconds(DateTime)-
-	calendar:datetime_to_gregorian_seconds({{1970,1,1},{0,0,0}}).
-
-epoch_to_datetime(T) ->
-    calendar:gregorian_seconds_to_datetime(T+calendar:datetime_to_gregorian_seconds({{1970,1,1},{0,0,0}})).
-
-
-duration_to_seconds(N) when is_integer(N) ->
-    N;
-duration_to_seconds({sec,N}) ->
-    N;
-duration_to_seconds({min,N}) ->
-    ?MINUTE*N;
-duration_to_seconds({hour,N}) ->
-    ?HOUR*N;
-duration_to_seconds({day,N}) ->
-    ?DAY*N;
-duration_to_seconds({week,N}) ->
-    ?WEEK*N;
-duration_to_seconds({month,N}) ->
-    ?MONTH*N;
-duration_to_seconds({year,N}) ->
-    ?YEAR*N.
