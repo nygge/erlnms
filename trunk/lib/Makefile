@@ -1,5 +1,7 @@
 LIBS := \
+	ast_man \
 	errdtool \
+	fast_agi \
 	pm_basic \
 	pm_rrdtool \
 	threshold \
