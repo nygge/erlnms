@@ -38,7 +38,7 @@ time_calc(DateTime,Dur) ->
     calendar:gregorian_seconds_to_datetime(TSecs+DSecs).
 
 duration_to_binary(Dur) when is_integer(Dur) ->
-    val_to_binary(Dur);
+    list_to_binary(integer_to_list(Dur));
 duration_to_binary(Dur) ->
     val_to_binary(duration_to_seconds(Dur)).
 
