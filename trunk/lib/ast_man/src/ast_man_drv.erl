@@ -11,7 +11,7 @@
 
 %% API
 -export([start_link/0,
-	 send/2,
+	 send/2
 	]).
 
 
@@ -39,7 +39,7 @@ start_link() ->
     gen_server:start_link({local, ?SERVER}, ?MODULE, [], []).
 
 send(Request) ->
-    gen_server_call(?SERVER,{api,Request,self()}).
+    gen_server:call(?SERVER,{api,Request,self()}).
 
 %%====================================================================
 %% gen_server callbacks
@@ -54,7 +54,6 @@ send(Request) ->
 %%--------------------------------------------------------------------
 init([]) ->
     {ok,Sock} = gen_tcp:connect({192,168,1,50},5038,[list]),
-    login(Sock),
     {ok, #state{state=free,
 		queue=queue:new(),
 		sock=Sock}}.
@@ -68,14 +67,14 @@ init([]) ->
 %%                                      {stop, Reason, State}
 %% Description: Handling call messages
 %%--------------------------------------------------------------------
-handle_call({api,Request,Pid}, _From, State) when State#state.state=free ->
+handle_call({api,Request,Pid}, _From, State) when State#state.state==free ->
     Aid=State#state.aid,
     Req=add_aid(Request,Aid),
     send(State#state.sock,Req),
     {reply, Aid, State#state{from=Pid,
 			     state=busy,
 			     aid=Aid+1}};
-handle_call({api,Request,Pid}, _From, State) when State#state.state=busy ->
+handle_call({api,Request,Pid}, _From, State) when State#state.state==busy ->
     Aid=State#state.aid,
     Req=add_aid(Request,Aid),
     {reply, Aid,State#state{queue=queue:in({Pid,Req},
@@ -128,7 +127,7 @@ code_change(_OldVsn, State, _Extra) ->
 %%--------------------------------------------------------------------
 %%% Internal functions
 %%--------------------------------------------------------------------
-add_aid(Request,Aid),
+add_aid(Request,Aid) ->
     [Request,"ActionId: ",integer_to_list(Aid),"\r\n\r\n"].
 
 send(Sock,Pack) ->
