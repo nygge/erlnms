@@ -60,7 +60,7 @@ create(Name,MOI,Store_type) when is_atom(name),is_list(MOI),is_atom(Store_type)-
 %%     {found,Counters}=pm_rrd_config:get_counters(MOI,MOC,all),
 %%     fetch(MOI,MOC,Counters,Res).
 
-%% @spec fetch(MOI,MOC,Counters,Res) -> Result
+%% @spec fetch(MOI,MOC,Counters,CF,Res) -> Result
 %% MOI         = [RDN]
 %% RDN         = {Type,Id}
 %% Type        = atom()
@@ -68,7 +68,8 @@ create(Name,MOI,Store_type) when is_atom(name),is_list(MOI),is_atom(Store_type)-
 %% MOC         = atom()
 %% Counters    = [Counter]
 %% Counter     = atom()
-%% Res         = 
+%% CF          = atom
+%% Res         = Duration
 %% Result      = WHAT
 
 fetch(MOI,MOC,Counters,CF,Res) ->
@@ -81,7 +82,7 @@ fetch(MOI,MOC,Counters,CF,Res) ->
 %     {found,Counters}=pm_rrd_config:get_counters(MOI,MOC,all),
 %     fetch(MOI,MOC,Counters,Res,Start,Stop).
 
-%% @spec fetch(MOI,MOC,Counters,Res,Rows,Stop) -> Result
+%% @spec fetch(MOI,MOC,Counters,CF,Res,Rows,Stop) -> Result
 %% MOI         = [RDN]
 %% RDN         = {Type,Id}
 %% Type        = atom()
@@ -89,7 +90,8 @@ fetch(MOI,MOC,Counters,CF,Res) ->
 %% MOC         = atom()
 %% Counters    = [Counter]
 %% Counter     = atom()
-%% Res         = 
+%% CF          = atom
+%% Res         = Duration
 %% Rows        = integer()
 %% Stop        = datetime()
 %% Result      = WHAT
@@ -100,7 +102,7 @@ fetch(MOI,MOC,Counters,CF,Res,Rows,Stop) when is_integer(Rows),Rows>0 ->
     Start=utils:epoch_to_datetime(S-D),
     fetch(MOI,MOC,Counters,CF,Res,Start,Stop);
 
-%% @spec fetch(MOI,MOC,Counters,Res,Start,Stop) -> Result
+%% @spec fetch(MOI,MOC,Counters,CF,Res,Start,Stop) -> Result
 %% MOI         = [RDN]
 %% RDN         = {Type,Id}
 %% Type        = atom()
@@ -108,7 +110,8 @@ fetch(MOI,MOC,Counters,CF,Res,Rows,Stop) when is_integer(Rows),Rows>0 ->
 %% MOC         = atom()
 %% Counters    = [Counter]
 %% Counter     = atom()
-%% Res         = 
+%% CF          = atom
+%% Res         = Duration
 %% Start       = datetime()
 %% Stop        = datetime()
 %% Result      = WHAT
