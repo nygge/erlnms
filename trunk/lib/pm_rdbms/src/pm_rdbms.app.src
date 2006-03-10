@@ -1,0 +1,7 @@
+{application, pm_rdbms,
+ [{description, "Performance Management RDBMS Backend"},
+  {vsn,"%VSN%"},
+  {modules,[%MODULES%]},
+  {applications,[kernel,stdlib,mnesia,odbc,pm_basic]},
+  {mod, {pm_rdbms,[]}}
+ ]}.

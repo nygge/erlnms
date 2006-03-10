@@ -1,5 +1,7 @@
 {application, rrdtool,
  [{description,"RRDTool interface"},
+  {vsn,"%VSN%"},
+  {modules,[%MODULES%]},
   {applications,[kernel,stdlib]},
   {mod, {rrdtool_app,[]}},
   {env,[{no_rrdtool_workers,3}]}

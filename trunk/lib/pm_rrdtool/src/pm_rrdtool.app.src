@@ -1,5 +1,7 @@
 {application, pm_rrdtool,
  [{description, "Performance Management RRDTool Backend"},
+  {vsn,"%VSN%"},
+  {modules,[%MODULES%]},
   {applications,[kernel,stdlib,mnesia,pm_basic,rrdtool]},
   {mod, {pm_rrdtool,[]}}
  ]}.

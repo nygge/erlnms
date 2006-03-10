@@ -1,10 +1,10 @@
 LIBS := \
 	errdtool \
-#	pm_basic \
+	pm_basic \
+	pm_rrdtool \
+	threshold \
+	utils
 #	pm_rdbms \
-#	pm_rrdtool \
-#	threshold \
-#	utils
 
 all: $(LIBS)
 
