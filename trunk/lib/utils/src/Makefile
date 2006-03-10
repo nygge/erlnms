@@ -1,10 +1,10 @@
 include ../vsn.mk
 
-VSN=$(ERRDTOOL_VSN)
+VSN=$(UTILS_VSN)
 
 include ../../../support/include.mk
 
-all: $(ERL_OBJECTS) $(ERL_DOCUMENTS) ../ebin/rrdtool.app
+all: $(ERL_OBJECTS) $(ERL_DOCUMENTS) ../ebin/utils.app
 
 clean:
 	-rm $(ERL_OBJECTS)
