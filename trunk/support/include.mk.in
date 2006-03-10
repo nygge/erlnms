@@ -60,10 +60,6 @@ $(EBIN_DIR)/%.$(EMULATOR): %.erl
 
 $(DOC_DIR)/%.html: %.erl
 	${ERL} -noshell \
-          -pa ../../syntax_tools/ebin \
-          -pa ../../edoc/ebin \
-          -pa ../../xmerl/ebin \
-	  -pa ../../ucs/ebin \
           -run edoc file $< -run init stop
 	mv *.html $(DOC_DIR)
 
