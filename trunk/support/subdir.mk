@@ -10,3 +10,6 @@ all clean:
               ( cd $$d && $(MAKE) $@ ) || exit 1 ; \
             fi ; \
 	  done
+
+release:
+	sh ../../support/create_release.sh
