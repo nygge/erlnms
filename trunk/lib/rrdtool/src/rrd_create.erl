@@ -7,7 +7,9 @@
 %%%-------------------------------------------------------------------
 -module(rrd_create).
 
--export([do_create/5]).
+-export([do_create/2]).
+
+-include("rrdtool.hrl").
 
 -define(DEF_SAMPLE_INT,{min,5}).
 
@@ -45,29 +47,29 @@
 %% Unit        = sec | min | hour | day | week | month | year
 %% No          = integer
 
-do_create(Port,File,Opts,DSs,RRAs) ->
-    CMD=create_cmd(File,Opts,DSs,RRAs),
+do_create(Port,File) when is_record(File,rrd_file) ->
+    CMD=create_cmd(File),
     rrd_lib:do_cmd(Port,CMD).
 
-create_cmd(File,Opts,DSs,RRAs) ->
-     SampleInt=get_sample_int(Opts),
+create_cmd(#rrd_file{file=File,start=Start,
+		     step=Step,dss=DSs,rras=RRAs}) ->
     [<<"create ">>,
      list_to_binary(File++" "),
-     opts_to_binary(Opts),
+     start_to_binary(Start),
+     step_to_binary(Step),
      dss_to_binary(DSs),
-     rras_to_binary(SampleInt,RRAs),
+     rras_to_binary(Step,RRAs),
      <<$\n>>].
 
-opts_to_binary(Opts) ->
-    lists:map(fun(Opt)->
-		      opt_to_binary(Opt)
-	      end, Opts).
-
-opt_to_binary({start,DateTime}) ->
+start_to_binary(undefined) ->
+    [];
+start_to_binary(DateTime) ->
     [<<"-b ">>,
      rrd_lib_utils:val_to_binary(utils:datetime_to_epoch(DateTime)),
-     <<" ">>];
-opt_to_binary({step,Duration}) ->
+     <<" ">>].
+step_to_binary(undefined) ->
+    [];
+step_to_binary(Duration) ->
     [<<"-s ">>,
      utils:duration_to_binary(Duration),
      <<" ">>].
@@ -77,14 +79,14 @@ dss_to_binary(DSs) ->
 		      ds_to_binary(DS)
 	      end, DSs).
 
-ds_to_binary({Name,DST,HB,Min,Max}) ->
+ds_to_binary(#rrd_ds{name=Name,type=DST,hb=HB,min=Min,max=Max}) ->
     [rrd_lib_utils:vals_to_binary(["DS",Name,DST,
 				   utils:duration_to_seconds(HB),
 				   Min,Max
 				   ],":"),
      <<" ">>];
 
-ds_to_binary({Name,'COMPUTE',RPN}) ->
+ds_to_binary(#rrd_ds_comp{name=Name,rpn=RPN}) ->
     [rrd_lib_utils:vals_to_binary(["DS",Name,"COMPUTE",RPN],":"),
      <<" ">>].
 
@@ -93,7 +95,9 @@ rras_to_binary(SampleInt,RRAs) ->
 		      rra_to_binary(SampleInt,RRA)
 	      end, RRAs).
 
-rra_to_binary(SampleInt,{CF,XFF,ConsInt,Capacity}) when is_tuple(Capacity) ->
+rra_to_binary(SampleInt,#rrd_rra{cf=CF,xff=XFF,interval=ConsInt,
+				 duration=Capacity}) 
+  when is_tuple(Capacity) ->
     Step=utils:duration_div(ConsInt,SampleInt),
     Rows=utils:duration_div(Capacity,ConsInt),
     [rrd_lib_utils:vals_to_binary(["RRA",CF,
@@ -103,23 +107,29 @@ rra_to_binary(SampleInt,{CF,XFF,ConsInt,Capacity}) when is_tuple(Capacity) ->
 				  ],":"),
      <<" ">>];
 
-rra_to_binary(_SampleInt,{'HWPREDICT',Rows,Alpha,Beta,Seasonal_period,Rra_num}) ->
+rra_to_binary(_SampleInt,#rrd_rra_hwpred{rows=Rows,alpha=Alpha,
+					 beta=Beta,period=Period,
+					 rra_num=Rra_num}) ->
     [rrd_lib_utils:vals_to_binary(["HWPREDICT",Rows,Alpha,Beta,
-				   Seasonal_period,Rra_num],":"),
+				   Period,Rra_num],":"),
      <<" ">>];
-rra_to_binary(_SampleInt,{'SEASONAL',Seasonal_period,Gamma,Rra_num}) ->
-    [rrd_lib_utils:vals_to_binary(["SEASONAL",Seasonal_period,Gamma,Rra_num
+rra_to_binary(_SampleInt,#rrd_rra_seasonal{period=Period,gamma=Gamma,
+					   rra_num=Rra_num}) ->
+    [rrd_lib_utils:vals_to_binary(["SEASONAL",Period,Gamma,Rra_num],":"),
+     <<" ">>];
+rra_to_binary(_SampleInt,#rrd_rra_devseason{period=Period,gamma=Gamma,
+					    rra_num=Rra_num}) when is_integer(Rra_num)->
+    [rrd_lib_utils:vals_to_binary(["DEVSEASONAL",Period,Gamma,Rra_num
 				  ],":"),
      <<" ">>];
-rra_to_binary(_SampleInt,{'DEVSEASONAL',Seasonal_period,Gamma,Rra_num}) when is_integer(Rra_num)->
-    [rrd_lib_utils:vals_to_binary(["DEVSEASONAL",Seasonal_period,Gamma,Rra_num
-				  ],":"),
-     <<" ">>];
-rra_to_binary(_SampleInt,{'DEVPREDICT',Rows,Rra_num}) ->
+rra_to_binary(_SampleInt,#rrd_rra_devpredict{rows=Rows,rra_num=Rra_num}) ->
     [rrd_lib_utils:vals_to_binary(["DEVPREDICT",Rows,Rra_num
 				  ],":"),
      <<" ">>];
-rra_to_binary(_SampleInt,{'FAILURES',Rows,Threshold,Window_len,Rra_num}) ->
+rra_to_binary(_SampleInt,#rrd_rra_failures{rows=Rows,
+					   threshold=Threshold,
+					   window=Window_len,
+					   rra_num=Rra_num}) ->
     [rrd_lib_utils:vals_to_binary(["FAILURES",Rows,Threshold,Window_len,Rra_num
 				  ],":"),
      <<" ">>].

@@ -16,7 +16,7 @@
 %% External exports
 -export([start/0,stop/0,
 	 start_link/0,start_link/1,
-	 create/3,create/4,
+	 create/1,
 %%	 dump/1,
 	 fetch/3,
 	 fetch/5,
@@ -82,16 +82,7 @@ start() ->
 stop() ->
     application:stop(rrdtool).
 
-%% @spec create(File,DSs,RRAs) -> Result
-%% Result = {ok,nothing} | {error,Reason}
-%%
-%% @doc Create a RRDTool database file.
-%% @equiv create(File,[],DSs,RRAs)
-
-create(File,DSs,RRAs) ->
-    create(File,[],DSs,RRAs).
-
-%% @spec create(File,Opts,DSs,RRAs) -> Result
+%% @spec create(FileSpec) -> Result
 %%
 %% FileName    = string
 %% Opts        = [Opt]
@@ -131,7 +122,7 @@ create(File,DSs,RRAs) ->
 %% RRDTool <a href="http://......">documentation</a>.</p>
 %%
 
-create(File,Opts,DSs,RRAs) ->
+create(File) when is_record(FileSpec,rrd_file) ->
     gen_server:call(?MODULE,{cmd,create,{File,Opts,DSs,RRAs}}).
 
 %% %% @spec dump(File,ToFile) -> Result
