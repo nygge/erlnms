@@ -1,6 +1,6 @@
 include ../vsn.mk
 
-VSN=$(ERRDTOOL_VSN)
+VSN=$(RRDTOOL_VSN)
 
 include ../../../support/include.mk
 
