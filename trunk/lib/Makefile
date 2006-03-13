@@ -1,9 +1,10 @@
 LIBS := \
 	ast_man \
-	errdtool \
 	fast_agi \
 	pm_basic \
 	pm_rrdtool \
+	reltool \
+	rrdtool \
 	threshold \
 	utils
 #	pm_rdbms \
