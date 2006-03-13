@@ -18,7 +18,7 @@
 %% Duration    = {Unit,Integer}
 %% Unit        = sec | min | hour | day | week | month | year
 
--record(rrd_file,{file,start,step,dss,rras}).
+-record(rrd_file,{file,start,step,dss,rras,last}).
 
 %%------------------------------------------------
 %% Data Source definition
@@ -32,7 +32,7 @@
 %% Min         = integer, Min allowed value
 %% Max         = integer, Max allowed value
 
--record(rrd_ds,{name,type,hb,min,max}).
+-record(rrd_ds,{name,type,hb,min,max,last,value,unknown_sec}).
 
 -record(rrd_ds_comp,{name,rpn}).
 

@@ -376,7 +376,7 @@ do_cmd(Port,CMD) when is_port(Port) ->
   	true ->
   	    receive
   		{Port,{data,Res}} ->
-%%		    io:format("Resp=~p~n",[Res]),
+		    io:format("Resp=~p~n",[Res]),
    		    parse_resp(Res)
 	    end
     end.

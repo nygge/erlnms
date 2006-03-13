@@ -8,6 +8,7 @@
 -module(rrd_lib_test).
 
 -export([create/2,
+	 info/1,
 	 update/0,
 	 graph1/0,
 	 graph/0,
@@ -49,6 +50,12 @@ create(N,I) ->
     {ok,Port}=rrd_lib:open(),
     rrd_lib:create(Port,Spec),
     rrd_lib:close(Port).
+
+info(File) ->
+    {ok,Port}=rrd_lib:open(),
+    Res=rrd_lib:info(Port,File),
+    rrd_lib:close(Port),
+    Res.
 
 update() ->
     File="/home/anders/src/erlang/miniNMS/rrd_lib/priv/test.rrd",
