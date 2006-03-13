@@ -1,0 +1,7 @@
+{application, reltool,
+ [{description,"Release handling tools"},
+  {vsn,"%VSN%"},
+  {modules,[%MODULES%]},
+  {applications,[kernel,stdlib]},
+  {env,[]}
+ ]}.
