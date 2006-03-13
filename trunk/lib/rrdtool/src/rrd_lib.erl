@@ -26,7 +26,7 @@
 %%--------------------------------------------------------------------
 %% External exports
 -export([open/0,close/1,do_cmd/2,
-	 create/4,create/5,
+	 create/2,
 %%	 dump/1,
 	 fetch/4,fetch/6,
 	 graph/3,
@@ -70,48 +70,8 @@ open() ->
 close(Port) when is_port(Port) ->
     port_close(Port).
 
-%% @spec create(Port,File,DSs,RRAs) -> Result
-%% Result = {ok,nothing} | {error,Reason}
+%% @spec create(Port,RRDSpec) -> Result
 %%
-%% @doc Create a RRDTool database file.
-%% @equiv create(Port,File,[],DSs,RRAs)
-
-create(Port,File,DSs,RRAs) when is_port(Port) ->
-    create(Port,File,[],DSs,RRAs).
-
-
-%% @spec create(Port,File,Opts,DSs,RRAs) -> Result
-%%
-%% Port        = port()
-%% FileName    = string
-%% Opts        = [Opt]
-%% Opt         = {start,DateTime} | {step, Duration}
-%% DateTime    = {{YYYY,MM,DD},{HH,MM,SS}}
-%% Duration    = {Unit,Integer}
-%% Unit        = sec | min | hour | day | week | month | year
-%%
-%% DSs         =[DSs]
-%% DS          = {Name,DST,HB,Min,Max}|{Name,'COMPUTE',RPN}
-%% Name        = string | atom
-%% DST         = 'GAUGE' | 'COUNTER' | 'DERIVE' | 'ABSOLUTE'
-%% RPN         = string()
-%% HB          = Duration
-%% Min         = integer()
-%% Max         = integer()
-%%
-%% RRAs        =[RRAs]
-%% RRA         = {'CF',XFF,ConsInt,ArchiveTime} |
-%%               {'HWPREDICT',rows,alpha,beta,seasonal_period,rra_num} |
-%%               {'SEASONAL',seasonal_period,gamma,rra_num} |
-%%               {'DEVSEASONAL',seasonal_period,gamma,rra_num} |
-%%               {'DEVPREDICT',rows,rra_num} |
-%%               {'FAILURES',rows,threshold,window_len,rra_num}
-%% CF          = 'AVERAGE' | 'MIN' | 'MAX' | 'LAST'
-%% XFF         = float()
-%% ConsInt     = {Unit,No}
-%% ArchiveTime = {Unit,No}
-%% Unit        = sec | min | hour | day | week | month | year
-%% No          = integer
 %%
 %% Result = {ok,nothing} | {error,Reason}
 %%
@@ -121,8 +81,8 @@ create(Port,File,DSs,RRAs) when is_port(Port) ->
 %% RRDTool <a href="http://......">documentation</a>.</p>
 %%
 
-create(Port,File,Opts,DSs,RRAs) when is_port(Port) ->
-    rrd_create:do_create(Port,File,Opts,DSs,RRAs).
+create(Port,RRDSpec) when is_port(Port) ->
+    rrd_create:do_create(Port,RRDSpec).
 
 %% %% @spec dump(Port,File,ToFile) -> Result
 %% %% Port    = port()

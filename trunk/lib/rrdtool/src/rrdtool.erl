@@ -35,6 +35,8 @@
 -export([init/1, handle_call/3, handle_cast/2, handle_info/2, 
 	 terminate/2, code_change/3]).
 
+-include("rrdtool.hrl").
+
 -record(state, {locking,waiting,working,work}).
 -record(waiting, {id,cmd}).
 %-record(cmd, {id,c}).
@@ -122,8 +124,8 @@ stop() ->
 %% RRDTool <a href="http://......">documentation</a>.</p>
 %%
 
-create(File) when is_record(FileSpec,rrd_file) ->
-    gen_server:call(?MODULE,{cmd,create,{File,Opts,DSs,RRAs}}).
+create(RRDSpec) when is_record(RRDSpec,rrd_file) ->
+    gen_server:call(?MODULE,{cmd,create,RRDSpec}).
 
 %% %% @spec dump(File,ToFile) -> Result
 %% %% File    = string()
@@ -624,8 +626,8 @@ start_worker(_Dummy) ->
     {ok,Pid}=rrdtool_worker:start_link(),
     Pid.
 	 
-find_lock(create,{File,_Opts,_DSs,_RRAs}) ->
-    {write,[File]};
+find_lock(create,RRDSpec) ->
+    {write,[RRDSpec#rrd_file.file]};
 find_lock(fetch,{File,_CF,_Res,_Start,_Stop}) ->
     {read,[File]};
 find_lock(graph,{_File,Pars}) ->

@@ -7,8 +7,17 @@
 %%%-------------------------------------------------------------------
 -module(rrd_lib_test).
 
--export([create/2,update/0,graph1/0,graph/0,start_all/3,start_all/4,stop_all/2,
-	 mn_insert/4,create_all/4]).
+-export([create/2,
+	 update/0,
+	 graph1/0,
+	 graph/0,
+	 start_all/3,
+	 start_all/4,
+	 stop_all/2,
+	 mn_insert/4,
+	 create_all/4]).
+
+-include("rrdtool.hrl").
 
 % create() ->
 %     File="/home/anders/erlang/miniNMS/rrdtool/priv/ne1-ifn1.rrd",
@@ -26,21 +35,19 @@
 
 create(N,I) ->
     SampleInt={sec,15},
-    Opts=[{step,SampleInt}],
-    File="/home/anders/src/erlang/miniNMS/rrd_lib/priv/NE"++integer_to_list(N)++
+    File="/tmp/RRDFile"++integer_to_list(N)++
 	"-IFN"++integer_to_list(I)++".rrd",
-    DSs=[["in",'GAUGE',{sec,30},0,3],
-	 ["out",'GAUGE',{sec,30},0,2],
-	 ["errorin",'GAUGE',{sec,30},0,2],
-	 ["errorout",'GAUGE',{sec,30},0,2]
-	],
-    RRAs=[{'LAST',0.5,{sec,15},{min,5}},
-	  {'LAST',0.5,{min,5},{hour,6}},
-	  {'LAST',0.5,{min,30},{day,1}},
-	  {'LAST',0.5,{hour,1},{week,2}}
-	 ],
+    DSs=[#rrd_ds{name="in",type='GAUGE',hb={sec,30},min=0,max=3},
+	 #rrd_ds{name="out",type='GAUGE',hb={sec,30},min=0,max=2},
+	 #rrd_ds{name="errorin",type='GAUGE',hb={sec,30},min=0,max=2},
+	 #rrd_ds{name="errorout",type='GAUGE',hb={sec,30},min=0,max=2}],
+    RRAs=[#rrd_rra{cf='LAST',xff=0.5,interval={sec,15},duration={min,5}},
+	  #rrd_rra{cf='LAST',xff=0.5,interval={min,5},duration={hour,6}},
+	  #rrd_rra{cf='LAST',xff=0.5,interval={min,30},duration={day,1}},
+	  #rrd_rra{cf='LAST',xff=0.5,interval={hour,1},duration={week,2}}],
+    Spec=#rrd_file{file=File,step=SampleInt,dss=DSs,rras=RRAs},
     {ok,Port}=rrd_lib:open(),
-    rrd_lib:create(Port,File,Opts,DSs,RRAs),
+    rrd_lib:create(Port,Spec),
     rrd_lib:close(Port).
 
 update() ->

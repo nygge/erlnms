@@ -48,14 +48,14 @@
 %% Unit        = sec | min | hour | day | week | month | year
 %% No          = integer
 
--record(rrd_rra, {cf,xff,interval,duration}).
+-record(rrd_rra, {id,cf,xff,interval,duration}).
 
--record(rrd_rra_hwpred,{rows,alpha,beta,period,rra_num}).
+-record(rrd_rra_hwpred,{id,rows,alpha,beta,period,rra_num}).
 
--record(rrd_rra_seasonal,{period,gamma,rra_num}).
+-record(rrd_rra_seasonal,{id,period,gamma,rra_num}).
 
--record(rrd_rra_devseason,{period,gamma,rra_num}).
+-record(rrd_rra_devseason,{id,period,gamma,rra_num}).
 
--record(rrd_rra_devpredict,{rows,rra_num}).
+-record(rrd_rra_devpredict,{id,rows,rra_num}).
 
--record(rrd_rra_failures,{rows,threshold,window,rra_num}).
+-record(rrd_rra_failures,{id,rows,threshold,window,rra_num}).
