@@ -14,7 +14,7 @@
  	 duration_div/2,
  	 duration_to_binary/1,
  	 duration_to_seconds/1,
- 	 seconds_to_duration/1,
+ 	 seconds_to_duration/1
  	]).
 
 -define(EPOCH,{{1970,1,1},{0,0,0}}).
@@ -25,7 +25,7 @@
 -define(MONTH,31*?DAY).
 -define(YEAR,366*?DAY).
 
-datetime_to_epoch({{Y,Mo,D},{H,Mi,S}}=DateTime) ->
+datetime_to_epoch({{_Y,_Mo,_D},{_H,_Mi,_S}}=DateTime) ->
     calendar:datetime_to_gregorian_seconds(DateTime)-
 	calendar:datetime_to_gregorian_seconds(?EPOCH).
 
@@ -40,7 +40,7 @@ time_calc(DateTime,Dur) ->
 duration_to_binary(Dur) when is_integer(Dur) ->
     list_to_binary(integer_to_list(Dur));
 duration_to_binary(Dur) ->
-    val_to_binary(duration_to_seconds(Dur)).
+    duration_to_binary(duration_to_seconds(Dur)).
 
 duration_to_seconds(N) when is_integer(N) ->
     N;
@@ -62,7 +62,7 @@ duration_to_seconds({year,N}) ->
 seconds_to_duration(S) ->
     T=[{year,?YEAR},{month,?MONTH},{week,?WEEK},{day,?DAY},
        {hour,?HOUR},{min,?MINUTE},{sec,1}],
-    {Type,Factor}=hd(lists:filter(fun ({L,K}) ->
+    {Type,Factor}=hd(lists:filter(fun ({_L,K}) ->
 					  (S rem K) == 0
 				  end,
 				  T)),
@@ -75,6 +75,6 @@ duration_div(X,Y) ->
     case X1 rem Y1 of
 	0 ->
 	    X1 div Y1;
-	N ->
+	_N ->
 	    exit({?MODULE,duration_div,not_dividable,X,Y})
     end.
