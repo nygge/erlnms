@@ -234,7 +234,7 @@ info(Port,File) when is_port(Port) ->
 %% @spec info(Port,File,Type) -> Result
 %% Port      = port()
 %% File      = string()
-%% Type      = all | last | dss | rra
+%% Type      = all | last | dss | rras
 %% Result    = WHAT
 %%
 %% @doc Get information about a RRDTool database.
@@ -244,7 +244,7 @@ info(Port,File) when is_port(Port) ->
 %% <p>When Type=dss, returns information about the datasources in the database.</p>
 %% <p>When Type=rra, returns information about the roundrobin archives in the database.</p>
 
-info(Port,File,Type) when is_port(Port), Type==all; Type==last; Type==dss; Type==rra ->
+info(Port,File,Type) when is_port(Port), Type==all; Type==last; Type==dss; Type==rras ->
     rrd_info:do_info(Port,File,Type).
 
 %% @spec last(Port,File) -> Result
@@ -288,7 +288,7 @@ restore(Port,Opts,FromFile,ToFile) when is_port(Port) ->
 %% %% @spec resize(Port,File,RRA,OP,Rows) -> Result
 %% %% Port     = port()
 %% %% File     = string()
-%% %% RRA      = atom()
+%% %% RRA      = integer()
 %% %% OP       = grow | shrink
 %% %% Rows     = integer()
 %% %%
@@ -369,14 +369,12 @@ xport(Port,Pars) when is_port(Port) ->
 
 %% @private
 do_cmd(Port,CMD) when is_port(Port) ->
-%%    io:format("rrd_lib=~p~n",[CMD]),
     case catch port_command(Port,CMD) of
 	{'EXIT',Port,Reason} ->
   	    {error,Reason};
   	true ->
   	    receive
   		{Port,{data,Res}} ->
-		    io:format("Resp=~p~n",[Res]),
    		    parse_resp(Res)
 	    end
     end.

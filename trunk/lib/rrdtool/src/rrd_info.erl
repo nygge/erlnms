@@ -20,11 +20,11 @@ do_info(Port,File,Type) ->
 		all ->
 		    Ret;
 		last ->
-		    element(4,Ret);
+		    Ret#rrd_file.last;
 		dss ->
-		    element(5,Ret);
-		rra ->
-		    element(6,Ret)
+		    Ret#rrd_file.dss;
+		rras ->
+		    Ret#rrd_file.rras
 	    end;
 	Error ->
 	    Error

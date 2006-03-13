@@ -8,7 +8,7 @@
 -module(rrd_lib_test).
 
 -export([create/2,
-	 info/1,
+	 info/1,info/2,
 	 update/0,
 	 graph1/0,
 	 graph/0,
@@ -52,8 +52,10 @@ create(N,I) ->
     rrd_lib:close(Port).
 
 info(File) ->
+    info(File,all).
+info(File,What) ->
     {ok,Port}=rrd_lib:open(),
-    Res=rrd_lib:info(Port,File),
+    Res=rrd_lib:info(Port,File,What),
     rrd_lib:close(Port),
     Res.
 
