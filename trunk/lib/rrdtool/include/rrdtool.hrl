@@ -106,6 +106,10 @@
 		  rpn        % RPN expression
 		 }).
 
+-record(rrd_vdef,{vname,     % Variable name
+		  rpn        % RPN expression
+		 }).
+
 -record(rrd_xport,{vname,    % Variable name
 		   legend    % Exported name
 		  }).

@@ -9,34 +9,14 @@
 
 -export([do_xport/2]).
 
+-include("rrdtool.hrl").
+
 %%%-------------------------------------------------------------------
 %%% do_xport(Port,Pars)
 %%% Port = port(),
-%%% Pars = {Flags,DEFs,CDEFs,XPORTs}
-%%%
-%%% Flags = [Flag]
-%%% Flag= {start,Start}|{'end',End}|{maxrows,MaxRows}|{step,Step}
-%%% Start = End = datetime()
-%%% MaxRows = int()
-%%% DEFs = [DEF]
-%%% CDEFs = [CDEF]
-%%% XPORTs = [XPORT]
-%%%
-%%% DEF = {Vname,RRD,DS_name,CF}
-%%% Vname = atom()
-%%% RRD = string()
-%%% DS_name = atom()
-%%% CF = 'AVERAGE'|'MIN'|'MAX'|'LAST'
-%%%
-%%% CDEF = {Vname,RPN}
-%%% RPN = string()
-%%%
-%%% XPORT = {Vname,Legend}
-%%% Legend = string()
 
-do_xport(Port,{Flags,DEFs,CDEFs,XPORTs}) ->
-    CMD=create_cmd(Flags,DEFs,CDEFs,XPORTs),
-    {_,File,_,_}=hd(DEFs),
+do_xport(Port,Def) ->
+    CMD=create_cmd(Def),
     case rrd_lib:do_cmd(Port,CMD) of
 	{ok,Result} ->
 	    parse_res(Result);
@@ -44,34 +24,42 @@ do_xport(Port,{Flags,DEFs,CDEFs,XPORTs}) ->
 	    Error
     end.
 
-create_cmd(Flags,DEFs,CDEFs,XPORTs) ->
+create_cmd(Def) ->
     [<<"xport ">>,
-     flags_to_binary(Flags),
-     rrd_graph:par_to_binary({def,DEFs}),
-     rrd_graph:par_to_binary({cdef,CDEFs}),
-     xports_to_binary(XPORTs),
+     start_to_binary(Def#rrd_export.start),
+     stop_to_binary(Def#rrd_export.stop),
+     rows_to_binary(Def#rrd_export.rows),
+     step_to_binary(Def#rrd_export.step),
+     rrd_graph:defs_to_binary({def,Def#rrd_export.defs}),
+     rrd_graph:cdefs_to_binary({cdef,Def#rrd_export.cdefs}),
+     xports_to_binary(Def#rrd_export.xports),
      <<$\n>>].
 
-flags_to_binary(Flags) ->
-    lists:map(fun (X) ->
-		      flag_to_binary(X)
-	      end,
-	      Flags).
+start_to_binary(undefined) ->
+    <<>>;
+start_to_binary(T) ->
+    mk_flag("s",utils:datetime_to_epoch(T)).
 
-flag_to_binary({start,T}) ->
-    mk_flag("s",utils:datetime_to_epoch(T));
-flag_to_binary({'end',T}) ->
-    mk_flag("e",utils:datetime_to_epoch(T));
-flag_to_binary({maxrows,P}) ->
-    mk_flag("m",P);
-flag_to_binary({step,P}) ->
-    mk_flag("step",utils:duration_to_seconds(P)).
+stop_to_binary(undefined) ->
+    <<>>;
+stop_to_binary(T) ->
+    mk_flag("e",utils:datetime_to_epoch(T)).
+
+rows_to_binary(undefined) ->
+    <<>>;
+rows_to_binary(R) ->
+    mk_flag("m",R).
+
+step_to_binary(undefined) ->
+    <<>>;
+step_to_binary(S) ->
+    mk_flag("step",utils:duration_to_seconds(S)).
 
 mk_flag(Flag,Value) ->
     Sign=case length(Flag) of
 	     1 ->
 		 <<"-">>;
-	     N ->
+	     _N ->
 		 <<"--">>
 		     end,
     [Sign,list_to_binary(Flag),<<" ">>,
@@ -79,14 +67,11 @@ mk_flag(Flag,Value) ->
      <<" ">>].
 
 xports_to_binary(XPORTs) ->
-    lists:map(fun(X) ->
-		      xport_to_binary(X)
+    lists:map(fun(#rrd_xport{vname=Vname,legend=Legend}) ->
+		      rrd_lib_utils:vals_to_binary(["XPORT:",Vname,
+						    ":",Legend," "])
 	      end,
 	      XPORTs).
-
-xport_to_binary({Vname,Legend}) ->
-    rrd_lib_utils:vals_to_binary(["XPORT:",Vname,":",Legend," "]).
-   
 
 %%%========================================================================
 %%%
@@ -110,25 +95,25 @@ parse_res(Res) ->
 		 Data),
     {Meta,D1}.
 
-parse_meta([("<start>"++M)=Line|More]) ->
+parse_meta([("<start>"++_M)=Line|More]) ->
     R={start,utils:epoch_to_datetime(parse_line_int(Line))},
     [R|parse_meta(More)];
-parse_meta([("<end>"++M)=Line|More]) ->
+parse_meta([("<end>"++_M)=Line|More]) ->
     R={'end',utils:epoch_to_datetime(parse_line_int(Line))},
     [R|parse_meta(More)];
-parse_meta([("<step>"++M)=Line|More]) ->
+parse_meta([("<step>"++_M)=Line|More]) ->
     R={'step',utils:seconds_to_duration(parse_line_int(Line))},
     [R|parse_meta(More)];
-parse_meta([("<rows>"++M)=Line|More]) ->
+parse_meta([("<rows>"++_M)=Line|More]) ->
     R={rows,parse_line_int(Line)},
     [R|parse_meta(More)];
-parse_meta([("<columns>"++M)=Line|More]) ->
+parse_meta([("<columns>"++_M)=Line|More]) ->
     R={columns,parse_line_int(Line)},
     [R|parse_meta(More)];
-parse_meta([("<entry>"++M)=Line|More]=L) ->
+parse_meta([("<entry>"++_M)|_More]=L) ->
     {Es,Rest}=parse_entry([],L),
     [Es|parse_meta(Rest)];
-parse_meta([X|Y]) ->
+parse_meta([_X|Y]) ->
     parse_meta(Y);
 parse_meta([]) ->
     [].
@@ -136,7 +121,7 @@ parse_meta([]) ->
 parse_line_int(Line) ->
     list_to_integer(lists:nth(2,string:tokens(Line,"<>/"))).
 
-parse_entry(Acc,[("<entry>"++M)=Line|More]) ->
+parse_entry(Acc,[("<entry>"++_M)=Line|More]) ->
     R=parse_line_atom(Line),
     parse_entry([R|Acc],More);
 parse_entry(Acc,X) ->
@@ -151,7 +136,7 @@ cnt_to_val(Ds) ->
 		      unknown;
 		  (X) ->
 		      case catch list_to_float(X) of
-			  {'EXIT',Reason} ->
+			  {'EXIT',_Reason} ->
 			      list_to_integer(X);
 			  F ->
 			      F

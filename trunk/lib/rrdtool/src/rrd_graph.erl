@@ -9,6 +9,8 @@
 
 -export([do_graph/3,par_to_binary/1]).
 
+-include("rrdtool.hrl").
+
 do_graph(Port,File,Pars) ->
     CMD=create_cmd(File,Pars),
     rrd_lib:do_cmd(Port,CMD).
@@ -115,19 +117,13 @@ pars_to_binary(Pars) ->
 	      end, Pars).
 
 par_to_binary({def,Defs}) ->
-    lists:map(fun(X)->
-		      def_to_binary(X)
-	      end, Defs);
+    defs_to_binary(Defs);
 
 par_to_binary({cdef,CDEFs}) ->
-    lists:map(fun(X)->
-		      cdef_to_binary(X)
-	      end, CDEFs);
+    cdefs_to_binary(CDEFs);
 
 par_to_binary({vdef,VDEFs}) ->
-    lists:map(fun(X)->
-		      vdef_to_binary(X)
-	      end, VDEFs);
+    vdefs_to_binary(VDEFs);
 
 par_to_binary({print,Xs}) ->
     lists:map(fun(X)->
@@ -164,14 +160,24 @@ par_to_binary({stack,Xs}) ->
 		      stack_to_binary(X)
 	      end, Xs).
 
-def_to_binary({VName,RRD,DS,CF}) ->
-    rrd_lib_utils:vals_to_binary(["DEF:",VName,"=",RRD,":",DS,":",CF," "]).
+defs_to_binary(Defs) ->
+    lists:map(fun(#rrd_def{vname=VName,rrd=RRD,ds_name=DS,cf=CF})->
+		      rrd_lib_utils:vals_to_binary(["DEF:",VName,
+						    "=",RRD,":",DS,
+						    ":",CF," "])
+	      end, Defs).
 
-cdef_to_binary({VName,Expr}) ->
-    rrd_lib_utils:vals_to_binary(["CDEF:",VName,"=",Expr," "]).
+cdefs_to_binary(CDEFs) ->
+    lists:map(fun(#rrd_cdef{vname=VName,rpn=RPN})->
+		      rrd_lib_utils:vals_to_binary(["CDEF:",VName,
+						    "=",RPN," "])
+	      end, CDEFs).
 
-vdef_to_binary({VName,Expr}) ->
-    rrd_lib_utils:vals_to_binary(["VDEF:",VName,"=",Expr," "]).
+vdefs_to_binary(VDEFs) ->
+    lists:map(fun(#rrd_vdef{vname=VName,rpn=RPN})->
+		      rrd_lib_utils:vals_to_binary(["VDEF:",VName,
+						    "=",RPN," "])
+	      end, VDEFs).
 
 print_to_binary({VName,CF,Format})->
     [rrd_lib_utils:vals_to_binary(["PRINT",VName,CF,Format],":"),<<" ">>].
