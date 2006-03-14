@@ -382,7 +382,6 @@ get_resp(Port) ->
 get_resp(Port,Acc) ->
     receive
 	{Port,{data,Res}} ->
-io:format("Got ~p~n",[Res]),
 	    case done(Res) of
 		true ->
 		    parse_resp(Acc++Res);
@@ -393,20 +392,30 @@ io:format("Got ~p~n",[Res]),
 
 done("OK"++_More) ->
     true;
+done("ERROR:"++_More) ->
+    true;
 done(S) ->
     case string:str(S,"\nOK") of
 	0 -> false;
 	N -> true
     end.
 
-parse_resp("ERROR:"++More) ->
-    Res=string:left(More,string:str(More,"\nOK")-1),
+parse_resp("ERROR: "++More) ->
+    Res=get_error(More),
     {error,Res};
-parse_resp("-1\nERROR:"++More) ->
-    Res=string:left(More,string:str(More,"\nOK")-1),
+parse_resp("-1\nERROR: "++More) ->
+    Res=get_error(More),
     {error,Res};
 parse_resp("OK"++_More) ->
     {ok,nothing};
 parse_resp(Resp) ->
     Res=string:left(Resp,string:str(Resp,"\nOK")-1),
     {ok,Res}.
+
+get_error(Res) ->
+    case string:str(Res,"\nOK") of
+	0 -> 
+	    string:left(Res,length(Res)-1);
+	N ->
+	    string:left(Res,N-1)
+    end.
