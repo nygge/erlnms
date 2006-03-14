@@ -373,10 +373,30 @@ do_cmd(Port,CMD) when is_port(Port) ->
 	{'EXIT',Port,Reason} ->
   	    {error,Reason};
   	true ->
-  	    receive
-  		{Port,{data,Res}} ->
-   		    parse_resp(Res)
+	    get_resp(Port)
+    end.
+
+get_resp(Port) ->
+    get_resp(Port,[]).
+
+get_resp(Port,Acc) ->
+    receive
+	{Port,{data,Res}} ->
+io:format("Got ~p~n",[Res]),
+	    case done(Res) of
+		true ->
+		    parse_resp(Acc++Res);
+		false  ->
+		    get_resp(Port,Acc++Res)
 	    end
+    end.
+
+done("OK"++_More) ->
+    true;
+done(S) ->
+    case string:str(S,"\nOK") of
+	0 -> false;
+	N -> true
     end.
 
 parse_resp("ERROR:"++More) ->
