@@ -1,0 +1,8 @@
+#!/bin/sh
+
+mkdir $1
+mkdir $1/src
+mkdir $1/doc
+mkdir $1/ebin
+
+echo "VSN=0.1" > $1/vsn.mk
