@@ -7,7 +7,10 @@
 %%%-------------------------------------------------------------------
 -module(rrd_graph).
 
--export([do_graph/3,par_to_binary/1]).
+-export([do_graph/3,
+	 defs_to_binary/1,
+	 cdefs_to_binary/1,
+	 par_to_binary/1]).
 
 -include("rrdtool.hrl").
 
@@ -28,9 +31,9 @@ flags_to_binary(Flags) ->
 	      end, Flags).
 
 flag_to_binary({start,T}) ->
-    mk_flag("s",utils:datetime_to_epoch(T));
+    mk_flag("s",time:datetime_to_epoch(T));
 flag_to_binary({'end',T}) ->
-    mk_flag("e",utils:datetime_to_epoch(T));
+    mk_flag("e",time:datetime_to_epoch(T));
 flag_to_binary({x_grid,P}) ->
     mk_flag("x",P);
 flag_to_binary({y_grid,P}) ->

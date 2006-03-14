@@ -65,7 +65,7 @@ start_to_binary(undefined) ->
     [];
 start_to_binary(DateTime) ->
     [<<"-b ">>,
-     rrd_lib_utils:val_to_binary(utils:datetime_to_epoch(DateTime)),
+     rrd_lib_utils:val_to_binary(time:datetime_to_epoch(DateTime)),
      <<" ">>].
 step_to_binary(undefined) ->
     [];

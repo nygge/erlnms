@@ -13,7 +13,7 @@ do_last(Port,File) ->
     CMD=create_cmd(File),
     case rrd_lib:do_cmd(Port,CMD) of
 	{ok,R} ->
-	    utils:epoch_to_datetime(list_to_integer(R));
+	    time:epoch_to_datetime(list_to_integer(R));
 	Error ->
 	    Error
     end.

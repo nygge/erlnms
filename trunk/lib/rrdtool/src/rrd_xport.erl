@@ -30,20 +30,20 @@ create_cmd(Def) ->
      stop_to_binary(Def#rrd_export.stop),
      rows_to_binary(Def#rrd_export.rows),
      step_to_binary(Def#rrd_export.step),
-     rrd_graph:defs_to_binary({def,Def#rrd_export.defs}),
-     rrd_graph:cdefs_to_binary({cdef,Def#rrd_export.cdefs}),
+     rrd_graph:defs_to_binary(Def#rrd_export.defs),
+     rrd_graph:cdefs_to_binary(Def#rrd_export.cdefs),
      xports_to_binary(Def#rrd_export.xports),
      <<$\n>>].
 
 start_to_binary(undefined) ->
     <<>>;
 start_to_binary(T) ->
-    mk_flag("s",utils:datetime_to_epoch(T)).
+    mk_flag("s",time:datetime_to_epoch(T)).
 
 stop_to_binary(undefined) ->
     <<>>;
 stop_to_binary(T) ->
-    mk_flag("e",utils:datetime_to_epoch(T)).
+    mk_flag("e",time:datetime_to_epoch(T)).
 
 rows_to_binary(undefined) ->
     <<>>;
@@ -53,7 +53,7 @@ rows_to_binary(R) ->
 step_to_binary(undefined) ->
     <<>>;
 step_to_binary(S) ->
-    mk_flag("step",utils:duration_to_seconds(S)).
+    mk_flag("step",time:duration_to_seconds(S)).
 
 mk_flag(Flag,Value) ->
     Sign=case length(Flag) of
@@ -89,20 +89,20 @@ parse_res(Res) ->
     Data=lists:sublist(D,2,DL-3),
     D1=lists:map(fun(R) ->
 			 [TS|Ds]=string:tokens(R,"<>/tvrow"),
-			 {utils:epoch_to_datetime(list_to_integer(TS)),
+			 {time:epoch_to_datetime(list_to_integer(TS)),
 			  cnt_to_val(Ds)}
 		 end,
 		 Data),
     {Meta,D1}.
 
 parse_meta([("<start>"++_M)=Line|More]) ->
-    R={start,utils:epoch_to_datetime(parse_line_int(Line))},
+    R={start,time:epoch_to_datetime(parse_line_int(Line))},
     [R|parse_meta(More)];
 parse_meta([("<end>"++_M)=Line|More]) ->
-    R={'end',utils:epoch_to_datetime(parse_line_int(Line))},
+    R={'end',time:epoch_to_datetime(parse_line_int(Line))},
     [R|parse_meta(More)];
 parse_meta([("<step>"++_M)=Line|More]) ->
-    R={'step',utils:seconds_to_duration(parse_line_int(Line))},
+    R={'step',time:seconds_to_duration(parse_line_int(Line))},
     [R|parse_meta(More)];
 parse_meta([("<rows>"++_M)=Line|More]) ->
     R={rows,parse_line_int(Line)},
