@@ -153,7 +153,15 @@ graph_to_binary(Ds) ->
 		      g_to_bin(D)
 	      end,Ds).
 
-g_to_bin(#rrd_area{vname=V,color=_C,legend=_L,stack=_S}) ->
+g_to_bin(#rrd_area{vname=V,color=undefined,legend=L,stack=S}) ->
+    LS=mk_leg_stack(L,S),
+    More=[V|LS],
+    rrd_lib_utils:vals_to_binary(["AREA",More],":");
+
+g_to_bin(#rrd_area{vname=V,color=C,legend=L,stack=S}) ->
+    LS=mk_leg_stack(L,S),
+    VC1=concat_color(V,C),
+    More=[VC1|LS],
     rrd_lib_utils:vals_to_binary(["AREA",V],":");
 
 g_to_bin(#rrd_comment{text=Text}) ->
@@ -177,8 +185,17 @@ g_to_bin(#rrd_print{vname=VName,format=Format})->
 g_to_bin(#rrd_shift{vname=V,offset=Off}) ->
     rrd_lib_utils:vals_to_binary(["SHIFT",V,Off],":");
 
-g_to_bin(#rrd_tick{vname=V,rrggbb=_RGB,aa=_AA,fraction=_F,legend=_L}) ->
-    rrd_lib_utils:vals_to_binary(["TICK",V],":");
+g_to_bin(#rrd_tick{vname=V,rrggbb=RGB,aa=_AA,fraction=undefined,legend=_L}) ->
+    VC1=concat_color(V,RGB),
+    rrd_lib_utils:vals_to_binary(["TICK",VC1],":");
+
+g_to_bin(#rrd_tick{vname=V,rrggbb=RGB,aa=_AA,fraction=F,legend=undefined}) ->
+    VC1=concat_color(V,RGB),
+    rrd_lib_utils:vals_to_binary(["TICK",VC1,F],":");
+
+g_to_bin(#rrd_tick{vname=V,rrggbb=RGB,aa=_AA,fraction=F,legend=L}) ->
+    VC1=concat_color(V,RGB),
+    rrd_lib_utils:vals_to_binary(["TICK",VC1,F,L],":");
 
 g_to_bin(#rrd_vrule{time=Time,color=Color,legend=undefined}) ->
     VC1=concat_color(Time,Color),
@@ -190,7 +207,7 @@ g_to_bin(#rrd_vrule{time=Time,color=Color,legend=L}) ->
 mk_leg_stack(undefined,undefined) ->
     [];
 mk_leg_stack(undefined,true) ->
-    ["STACK"];
+    [":STACK"];
 mk_leg_stack(Legend,undefined) ->
     [Legend];
 mk_leg_stack(Legend,true) ->
