@@ -1,0 +1,55 @@
+-module(pp_repete).
+
+-include("alarm.hrl").
+-export([start/1,start_link/1,stop/1]).
+-record(state,{tab}).
+-record(reps,{id,reps,dur,queue}).
+
+start(Name)->
+   proc_lib:start(?MODULE,init,[self()]).
+
+start_link(Name)->
+   proc_lib:start_link(?MODULE,init,[self()]).
+
+init(Parent)->
+   Tab=ets:new(reps,[{keypos,2}]),
+   proc_lib:init_ack(Parent,ok),
+   loop(#state{tab=Tab}).
+
+loop(State) ->
+   receive
+      {repete,A,Reps,Dur} when is_record(A,alarm), 
+                              A#alarm.severity =/= cease -> 
+	 Key={A#alarm.id,A#alarm.type},
+	 Now=now(),
+	 case ets:lookup(State#state.tab,Key) of
+	    [#reps{id=Key,queue=Queue}=Rec] ->
+	       Q=case add_entry(Queue,Now) of
+	            {trip,Q1} ->
+		       format_and_send_alarm(Rec,A),
+		       Q1;
+	            {ok,Q1} ->
+		       Q1
+	         end,
+	       ets:insert(State#state.tab,{Key,Q}),
+	       loop(State);
+	    [] ->
+	       Q1=new_queue(Reps,Dur),
+	       ets:insert(State#state.tab,#reps{id=Key,reps=Reps,dur=Dur,queue=Q1}),
+	       loop(State)
+	 end;
+		  
+      % When do we send cease?????
+      {repete,A,Reps,Dur} when is_record(A,alarm), 
+                               A#alarm.severity == cease -> 
+	 case ets:look_up(State#state.tab, {A#alarm.id,A#alarm.type}) of
+	    [#reps{id=Id,tref=Tref}] ->
+	       timer:cancel(Tref),
+	       ets:delete(tab,Key);
+	    [] ->
+	       pp_alarm!A
+	 end,
+         loop(State);
+      Other ->
+         loop(State)
+   end.

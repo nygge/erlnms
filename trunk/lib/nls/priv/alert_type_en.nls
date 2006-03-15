@@ -1,0 +1,14 @@
+%%=============================================================================
+%%
+%%	AlertType
+%%
+
+{alert_type,en,1,
+	["Other", 
+	"Communications Alert", 
+	"Quality of Service Alert",
+        "Processing Error", 
+	"Environmental Alert", 
+	"Model Change",
+        "Security Alert"]}.
+

@@ -1,0 +1,8 @@
+{application, fm_basic,
+ [{description,"Fault Management"},
+  {vsn,"%VSN%"},
+  {modules,[%MODULES%]},
+  {applications,[kernel,stdlib]},
+  {mod, {fm_basic,[]}},
+  {env,[]}
+ ]}.

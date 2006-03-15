@@ -1,0 +1,24 @@
+{'CIM_AlertIndication',en,1,[
+	"Indication Identifier",
+	"Correlated Indications",
+	"Indication Time",
+	"Description",
+	"Alerting Managed Element",
+	"Alert Type", 
+	"Other Alert Type", 
+	"Perceived Severity",
+	"Other Severity",
+	"Probable Cause",
+	"Probable Cause Description",
+	"Trending",
+	"Recommended Actions",
+	"Event Id",
+	"Event Time",
+	"System Creation Class Name",
+	"System Name",
+	"Provider Name"]}.
+
+{CIM_ThresholdIndication,en,1[
+	"Threshold Identifier",
+	"Threshold Value",
+	"Observed Value"]}.

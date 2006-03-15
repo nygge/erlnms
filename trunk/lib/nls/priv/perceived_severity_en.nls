@@ -1,0 +1,15 @@
+%%=============================================================================
+%%
+%%	PerceivedSeverity
+%%
+
+{perceived_severity,en,0,
+	["Unknown",
+	"Other",
+	"Information",
+	"Degraded/Warning",
+        "Minor",
+	"Major",
+	"Critical",
+	"Fatal"]}.
+

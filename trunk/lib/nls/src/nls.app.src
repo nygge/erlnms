@@ -1,0 +1,8 @@
+{application, nls,
+ [{description,"Simple National Language support"},
+  {vsn,"%VSN%"},
+  {modules,[%MODULES%]},
+  {applications,[kernel,stdlib]},
+  {mod, {nls,[]}},
+  {env,[]}
+ ]}.
