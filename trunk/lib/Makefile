@@ -1,6 +1,9 @@
 LIBS := \
 	ast_man \
 	fast_agi \
+	fm_basic \
+	fm_clients \
+	nls \
 	pm_basic \
 	pm_rrdtool \
 	reltool \
