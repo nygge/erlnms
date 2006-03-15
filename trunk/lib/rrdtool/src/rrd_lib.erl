@@ -29,7 +29,7 @@
 	 create/2,
 %%	 dump/1,
 	 fetch/4,fetch/6,
-	 graph/3,
+	 graph/2,
 	 info/2,info/3,
 	 last/2,
 	 restore/3,restore/4,
@@ -130,7 +130,7 @@ fetch(Port,File,CF,Res) when is_port(Port) ->
 fetch(Port,File,CF,Res,Start,Stop) when is_port(Port) ->
     rrd_fetch:do_fetch(Port,File,CF,Res,Start,Stop).
 
-%% @spec graph(Port,File,Pars) -> Result
+%% @spec graph(Port,Pars) -> Result
 %%
 %% File  = string()
 %% Pars  = [Flags|Ps]
@@ -216,8 +216,8 @@ fetch(Port,File,CF,Res,Start,Stop) when is_port(Port) ->
 %% <p> For a more detailed description of the parameters see the
 %% RRDTool <a href="http://......">documentation</a>.</p>
  
-graph(Port,File,Pars) when is_port(Port) ->
-    rrd_graph:do_graph(Port,File,Pars).
+graph(Port,Pars) when is_port(Port) ->
+    rrd_graph:do_graph(Port,Pars).
 
 %% @spec info(Port,File) -> Result
 %% Port      = port()

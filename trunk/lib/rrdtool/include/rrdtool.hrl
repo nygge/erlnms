@@ -87,6 +87,7 @@
 %% records for graph and export
 %%
 
+%% rrd_export
 -record(rrd_export,{start,   % Start time
 		    stop,    % End time
 		    rows,    % Max number of rows
@@ -95,6 +96,12 @@
 		    cdefs,   % [rrd_cdef]
 		    xports   % [rrd_xport]
 		   }).
+
+-record(rrd_xport,{vname,    % Variable name
+		   legend    % Exported name
+		  }).
+
+%% Common for rrd_graph and rrd_xport
 
 -record(rrd_def,{vname,      % Variable name
 		 rrd,        % RRD filename
@@ -110,6 +117,21 @@
 		  rpn        % RPN expression
 		 }).
 
--record(rrd_xport,{vname,    % Variable name
-		   legend    % Exported name
-		  }).
+%% rrd_graph
+-record(rrd_graph,{file,start,stop,step,defs=[],cdefs=[],vdefs=[],graph=[],options=[]}).
+
+-record(rrd_print,{vname,format}).
+
+-record(rrd_gprint,{vname,format}).
+
+-record(rrd_comment,{text}).
+
+-record(rrd_vrule,{time,color,legend}).
+
+-record(rrd_line,{width,vname,color,legend,stack}).
+
+-record(rrd_area,{vname,color,legend,stack}).
+
+-record(rrd_tick,{vname,rrggbb,aa,fraction,legend}).
+
+-record(rrd_shift,{vname,offset}).

@@ -7,22 +7,28 @@
 %%%-------------------------------------------------------------------
 -module(rrd_graph).
 
--export([do_graph/3,
+-export([do_graph/2,
 	 defs_to_binary/1,
-	 cdefs_to_binary/1,
-	 par_to_binary/1]).
+	 cdefs_to_binary/1]).
 
 -include("rrdtool.hrl").
 
-do_graph(Port,File,Pars) ->
-    CMD=create_cmd(File,Pars),
+do_graph(Port,Pars) ->
+    CMD=create_cmd(Pars),
+    io:format("~p~n",[binary_to_list(list_to_binary(lists:flatten(CMD)))]),
     rrd_lib:do_cmd(Port,CMD).
 
-create_cmd(File,[{flags,Flags}|Pars]) ->
+create_cmd(Pars) ->
     [list_to_binary("graph "),
-     list_to_binary(File), <<" ">>,
-     flags_to_binary(Flags),
-     pars_to_binary(Pars),
+     list_to_binary(Pars#rrd_graph.file), <<" ">>,
+     start_to_binary(Pars#rrd_graph.start),
+     stop_to_binary(Pars#rrd_graph.stop),
+     step_to_binary(Pars#rrd_graph.step),
+     flags_to_binary(Pars#rrd_graph.options),
+     defs_to_binary(Pars#rrd_graph.defs),
+     cdefs_to_binary(Pars#rrd_graph.cdefs),
+     vdefs_to_binary(Pars#rrd_graph.vdefs),
+     graph_to_binary(Pars#rrd_graph.graph),
      <<$\n>>].
 
 flags_to_binary(Flags) ->
@@ -30,32 +36,37 @@ flags_to_binary(Flags) ->
 		      flag_to_binary(X)
 	      end, Flags).
 
-flag_to_binary({start,T}) ->
-    mk_flag("s",time:datetime_to_epoch(T));
-flag_to_binary({'end',T}) ->
-    mk_flag("e",time:datetime_to_epoch(T));
-flag_to_binary({x_grid,P}) ->
-    mk_flag("x",P);
-flag_to_binary({y_grid,P}) ->
-    mk_flag("y",P);
-flag_to_binary(alt_y_grid) ->
-    mk_flag("alt-y-grid");
-flag_to_binary(alt_y_mrtg) ->
-    mk_flag("alt-y-mrtg");
+start_to_binary(undefined) ->
+    <<>>;
+start_to_binary(T) ->
+    mk_flag("s",time:datetime_to_epoch(T)).
+
+stop_to_binary(undefined) ->
+    <<>>;
+stop_to_binary(T) ->
+    mk_flag("e",time:datetime_to_epoch(T)).
+
+step_to_binary(undefined) ->
+    <<>>;
+step_to_binary(V) ->
+    mk_flag("S",time:duration_to_seconds(V)).
+
 flag_to_binary(alt_autoscale) ->
     mk_flag("alt-autoscale ");
 flag_to_binary(alt_autoscale_max) ->
     mk_flag("alt-autoscale-max ");
-flag_to_binary({units_exponent,V}) ->
-    mk_flag("units_exponent",V);
-flag_to_binary({vertical_label,T}) ->
-    mk_flag("vertical_label",T);
-flag_to_binary({width,W}) ->
-    mk_flag("width",W);
+flag_to_binary(alt_y_grid) ->
+    mk_flag("alt-y-grid");
+flag_to_binary(alt_y_mrtg) ->
+    mk_flag("alt-y-mrtg");
+flag_to_binary({background,V}) ->
+    mk_flag("B",V);
+flag_to_binary({base,V}) ->
+    mk_flag("B",V);
+flag_to_binary({color,V}) ->
+    mk_flag("c",V);
 flag_to_binary({height,H}) ->
     mk_flag("height",H);
-flag_to_binary(interlaced) ->
-    mk_flag("interlaced ");
 flag_to_binary({imginfo,F}) ->
     mk_flag("imginfo",F);
 flag_to_binary({imgformat,gif}) ->
@@ -64,32 +75,36 @@ flag_to_binary({imgformat,png}) ->
     mk_flag("imgformat","PNG");
 flag_to_binary({imgformat,gd}) ->
     mk_flag("imgformat","GD");
-flag_to_binary({background,V}) ->
-    mk_flag("B",V);
-flag_to_binary({overlay,V}) ->
-    mk_flag("O",V);
-flag_to_binary({unit,V}) ->
-    mk_flag("U",V);
+flag_to_binary(interlaced) ->
+    mk_flag("interlaced ");
 flag_to_binary(lazy) ->
     mk_flag("z");
-flag_to_binary({upper_limit,V}) ->
-    mk_flag("u",V);
-flag_to_binary({lower_limit,V}) ->
-    mk_flag("l",V);
-flag_to_binary(rigid) ->
-    mk_flag("r");
-flag_to_binary({base,V}) ->
-    mk_flag("B",V);
 flag_to_binary(logarithmic) ->
     mk_flag("o");
-flag_to_binary({color,V}) ->
-    mk_flag("c",V);
+flag_to_binary({lower_limit,V}) ->
+    mk_flag("l",V);
 flag_to_binary(no_legend) ->
     mk_flag("g");
+flag_to_binary({overlay,V}) ->
+    mk_flag("O",V);
+flag_to_binary(rigid) ->
+    mk_flag("r");
 flag_to_binary({title,T}) ->
     mk_flag("t",T);
-flag_to_binary({step,V}) ->
-    mk_flag("step",V).
+flag_to_binary({unit,V}) ->
+    mk_flag("U",V);
+flag_to_binary({units_exponent,V}) ->
+    mk_flag("units_exponent",V);
+flag_to_binary({upper_limit,V}) ->
+    mk_flag("u",V);
+flag_to_binary({vertical_label,T}) ->
+    mk_flag("vertical_label",T);
+flag_to_binary({width,W}) ->
+    mk_flag("width",W);
+flag_to_binary({x_grid,P}) ->
+    mk_flag("x",P);
+flag_to_binary({y_grid,P}) ->
+    mk_flag("y",P).
 
 mk_flag(Flag) ->
     Sign=case length(Flag) of
@@ -113,55 +128,6 @@ mk_flag(Flag,Value) ->
      <<" ">>,
      rrd_lib_utils:val_to_binary(Value),
      <<" ">>].
-    
-pars_to_binary(Pars) ->
-    lists:map(fun(X)->
-		      par_to_binary(X)
-	      end, Pars).
-
-par_to_binary({def,Defs}) ->
-    defs_to_binary(Defs);
-
-par_to_binary({cdef,CDEFs}) ->
-    cdefs_to_binary(CDEFs);
-
-par_to_binary({vdef,VDEFs}) ->
-    vdefs_to_binary(VDEFs);
-
-par_to_binary({print,Xs}) ->
-    lists:map(fun(X)->
-		      print_to_binary(X)
-	      end, Xs);
-
-par_to_binary({comment,Xs}) ->
-    lists:map(fun(X)->
-		      comment_to_binary(X)
-	      end, Xs);
-
-par_to_binary({hrule,Xs}) ->
-    lists:map(fun(X)->
-		     hrule_to_binary(X)
-	      end, Xs);
-
-par_to_binary({vrule,Xs}) ->
-    lists:map(fun(X)->
-		      vrule_to_binary(X)
-	      end, Xs);
-
-par_to_binary({line,Xs}) ->
-    lists:map(fun(X)->
-		      line_to_binary(X)
-	      end, Xs);
-
-par_to_binary({area,Xs}) ->
-    lists:map(fun(X)->
-		      area_to_binary(X)
-	      end, Xs);
-
-par_to_binary({stack,Xs}) ->
-    lists:map(fun(X)->
-		      stack_to_binary(X)
-	      end, Xs).
 
 defs_to_binary(Defs) ->
     lists:map(fun(#rrd_def{vname=VName,rrd=RRD,ds_name=DS,cf=CF})->
@@ -182,25 +148,34 @@ vdefs_to_binary(VDEFs) ->
 						    "=",RPN," "])
 	      end, VDEFs).
 
-print_to_binary({VName,CF,Format})->
-    [rrd_lib_utils:vals_to_binary(["PRINT",VName,CF,Format],":"),<<" ">>].
+graph_to_binary(Ds) ->
+    lists:map(fun (D) ->
+		      g_to_bin(D)
+	      end,Ds).
 
-comment_to_binary(Text) ->
-    [<<"COMMENT:">>,list_to_binary(Text),<<" ">>].
-    %%[rrd_lib_utils:vals_to_binary(["COMMENT",Text],":"),<<" ">>].
+g_to_bin(#rrd_print{vname=VName,format=Format})->
+    [rrd_lib_utils:vals_to_binary(["PRINT",VName,Format],":"),<<" ">>];
 
-hrule_to_binary(Val) ->
-    [rrd_lib_utils:vals_to_binary(["HRULE",Val],":"),<<" ">>].
+g_to_bin(#rrd_comment{text=Text}) ->
+    [<<"COMMENT:">>,list_to_binary(Text),<<" ">>];
 
-vrule_to_binary(Val) ->
-    [rrd_lib_utils:vals_to_binary(["VRULE",Val],":"),<<" ">>].
+g_to_bin(#rrd_vrule{time=Time,color=Color,legend=undefined}) ->
+    [rrd_lib_utils:vals_to_binary(["VRULE",Time,Color],":"),<<" ">>];
+g_to_bin(#rrd_vrule{time=Time,color=Color,legend=L}) ->
+    [rrd_lib_utils:vals_to_binary(["VRULE",Time,Color,L],":"),<<" ">>];
 
-line_to_binary({LNo,More}) ->
-    [rrd_lib_utils:vals_to_binary(["LINE"++integer_to_list(LNo),More],":"),
-     <<" ">>].
+g_to_bin(#rrd_line{width=W,vname=V,color=C,legend=_L,stack=_S}) ->
+    C1=lists:flatten(io_lib:format("~.16B",[C])),
+    Fill=lists:duplicate(6-length(C1),$0),
+    VC1=(io_lib:format("~s#~s~s",[V,Fill,C1])),
+    [rrd_lib_utils:vals_to_binary(["LINE"++integer_to_list(W),VC1],":")
+     ,<<" ">>];
 
-area_to_binary(Pars) ->
-    rrd_lib_utils:vals_to_binary(["AREA"|Pars],":").
+g_to_bin(#rrd_area{vname=V,color=_C,legend=_L,stack=_S}) ->
+    rrd_lib_utils:vals_to_binary(["AREA",V],":");
 
-stack_to_binary(Pars) ->
-    rrd_lib_utils:vals_to_binary(["STACK"|Pars],":").
+g_to_bin(#rrd_tick{vname=V,rrggbb=_RGB,aa=_AA,fraction=_F,legend=_L}) ->
+    rrd_lib_utils:vals_to_binary(["TICK",V],":");
+
+g_to_bin(#rrd_shift{vname=V,offset=Off}) ->
+    rrd_lib_utils:vals_to_binary(["SHIFT",V,Off],":").
