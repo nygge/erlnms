@@ -153,29 +153,50 @@ graph_to_binary(Ds) ->
 		      g_to_bin(D)
 	      end,Ds).
 
-g_to_bin(#rrd_print{vname=VName,format=Format})->
-    [rrd_lib_utils:vals_to_binary(["PRINT",VName,Format],":"),<<" ">>];
+g_to_bin(#rrd_area{vname=V,color=_C,legend=_L,stack=_S}) ->
+    rrd_lib_utils:vals_to_binary(["AREA",V],":");
 
 g_to_bin(#rrd_comment{text=Text}) ->
     [<<"COMMENT:">>,list_to_binary(Text),<<" ">>];
 
-g_to_bin(#rrd_vrule{time=Time,color=Color,legend=undefined}) ->
-    [rrd_lib_utils:vals_to_binary(["VRULE",Time,Color],":"),<<" ">>];
-g_to_bin(#rrd_vrule{time=Time,color=Color,legend=L}) ->
-    [rrd_lib_utils:vals_to_binary(["VRULE",Time,Color,L],":"),<<" ">>];
-
-g_to_bin(#rrd_line{width=W,vname=V,color=C,legend=_L,stack=_S}) ->
-    C1=lists:flatten(io_lib:format("~.16B",[C])),
-    Fill=lists:duplicate(6-length(C1),$0),
-    VC1=(io_lib:format("~s#~s~s",[V,Fill,C1])),
-    [rrd_lib_utils:vals_to_binary(["LINE"++integer_to_list(W),VC1],":")
+g_to_bin(#rrd_line{width=W,vname=V,color=undefined,legend=L,stack=S}) ->
+    LS=mk_leg_stack(L,S),
+    More=[V|LS],
+    [rrd_lib_utils:vals_to_binary(["LINE"++integer_to_list(W)|More],":")
+     ,<<" ">>];
+g_to_bin(#rrd_line{width=W,vname=V,color=C,legend=L,stack=S}) ->
+    LS=mk_leg_stack(L,S),
+    VC1=concat_color(V,C),
+    More=[VC1|LS],
+    [rrd_lib_utils:vals_to_binary(["LINE"++integer_to_list(W)|More],":")
      ,<<" ">>];
 
-g_to_bin(#rrd_area{vname=V,color=_C,legend=_L,stack=_S}) ->
-    rrd_lib_utils:vals_to_binary(["AREA",V],":");
+g_to_bin(#rrd_print{vname=VName,format=Format})->
+    [rrd_lib_utils:vals_to_binary(["PRINT",VName,Format],":"),<<" ">>];
+
+g_to_bin(#rrd_shift{vname=V,offset=Off}) ->
+    rrd_lib_utils:vals_to_binary(["SHIFT",V,Off],":");
 
 g_to_bin(#rrd_tick{vname=V,rrggbb=_RGB,aa=_AA,fraction=_F,legend=_L}) ->
     rrd_lib_utils:vals_to_binary(["TICK",V],":");
 
-g_to_bin(#rrd_shift{vname=V,offset=Off}) ->
-    rrd_lib_utils:vals_to_binary(["SHIFT",V,Off],":").
+g_to_bin(#rrd_vrule{time=Time,color=Color,legend=undefined}) ->
+    VC1=concat_color(Time,Color),
+    [rrd_lib_utils:vals_to_binary(["VRULE",VC1],":"),<<" ">>];
+g_to_bin(#rrd_vrule{time=Time,color=Color,legend=L}) ->
+    VC1=concat_color(Time,Color),
+    [rrd_lib_utils:vals_to_binary(["VRULE",VC1,L],":"),<<" ">>].
+
+mk_leg_stack(undefined,undefined) ->
+    [];
+mk_leg_stack(undefined,true) ->
+    ["STACK"];
+mk_leg_stack(Legend,undefined) ->
+    [Legend];
+mk_leg_stack(Legend,true) ->
+    [Legend,"STACK"].
+
+concat_color(V,C) ->
+    C1=lists:flatten(io_lib:format("~.16B",[C])),
+    Fill=lists:duplicate(6-length(C1),$0),
+    io_lib:format("~s#~s~s",[V,Fill,C1]).
