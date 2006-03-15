@@ -12,6 +12,7 @@
 %% API
 -export([start_link/0,
 	 create_file/0,
+	 graph/0,
 	 xport/0]).
 
 %% gen_server callbacks
@@ -46,6 +47,9 @@ create_file() ->
     {ok,Port}=rrd_lib:open(),
     rrd_lib:create(Port,Spec),
     rrd_lib:close(Port).
+
+graph()->
+    gen_server:call(?MODULE,graph).
 
 xport() ->
     gen_server:call(?MODULE,export).
@@ -133,6 +137,37 @@ handle_call(export, _From, State) ->
     %% 		 }).
 
     Reply=rrd_lib:xport(State#state.port,XPORT),
+    {reply, Reply, State};
+
+handle_call(graph, _From, State) ->
+    Now=erlang:universaltime(),
+    Start=time:time_calc(Now,{min,-5}),
+    DEFs=[#rrd_def{vname=avg1,
+		   rrd="/tmp/RRD_avg.rrd",
+		   ds_name=avg1,
+		   cf='LAST'}, 
+	  #rrd_def{vname=avg5,
+		   rrd="/tmp/RRD_avg.rrd",
+		   ds_name=avg5,
+		   cf='LAST'}, 
+	  #rrd_def{vname=avg15,
+		   rrd="/tmp/RRD_avg.rrd",
+		   ds_name=avg15,
+		   cf='LAST'}],
+    Lines=[#rrd_line{width=1,vname=avg1,color=16#FF0000},
+	   #rrd_line{width=1,vname=avg5,color=16#00FF00},
+	   #rrd_line{width=1,vname=avg15,color=16#0000FF}],
+    G=#rrd_graph{file="/tmp/RRD_avg.gif",
+		 start=Start,
+		 stop=Now,
+		 step={sec,5},
+		 defs=DEFs,
+		 %%cdefs,
+		 %%vdefs,
+		 graph=Lines
+		 %%options
+		},
+    Reply=rrd_lib:graph(State#state.port,G),
     {reply, Reply, State}.
 
 %%--------------------------------------------------------------------
