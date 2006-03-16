@@ -1,4 +1,10 @@
 %%------------------------------------------------------------
+%% name   = atom
+%% module = atom
+
+-record(pm_db_backend,{name,module}).
+
+%%------------------------------------------------------------
 %% name       = {moi,mo_type}
 %% store_type = atom, pm_mes_type,
 %% backend    = atom
