@@ -9,3 +9,5 @@ all: $(ERL_OBJECTS) $(ERL_DOCUMENTS) ../ebin/pm_basic.app
 clean:
 	-rm $(ERL_OBJECTS)
 
+$(EBIN_DIR)/pm_config.beam: ../include/pm_config.hrl ../include/pm_store.hrl
+$(EBIN_DIR)/pm_store.beam: ../include/pm_store.hrl
