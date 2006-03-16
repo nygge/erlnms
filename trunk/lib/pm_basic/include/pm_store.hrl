@@ -56,3 +56,20 @@
 
 -record(pm_der_counter,{name,expr,deps}).
 
+%%------------------------------------------------------------
+%% name          = atom
+%% value         = duration_spec
+%% duration_spec = {type,int}
+%% type          = sec|min|hour|day|week|month|year
+
+-record(pm_duration,{name,value}).
+
+%%------------------------------------------------------------
+%% id       = [RDN], MOI
+%% RDN      = {atom,term}
+%% events   = [Duration]
+%% Duration = {unit,int}
+%% unit     = sec|min|hour|day|week|month|year
+
+-record(pm_event,{id,events}).
+

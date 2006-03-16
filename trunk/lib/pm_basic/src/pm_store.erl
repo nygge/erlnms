@@ -1,17 +1,17 @@
 %%%-------------------------------------------------------------------
-%%% File    : pm_store_access.erl
+%%% File    : pm_store.erl
 %%% Author  : Anders Nygren <anders.nygren@gmail.com>
 %%% Description : 
 %%%
 %%% Created :  5 Jun 2004 by Anders Nygren <anders.nygren@gmail.com>
 %%%-------------------------------------------------------------------
--module(pm_store_access).
+-module(pm_store).
 
 %%--------------------------------------------------------------------
 %% Include files
 %%--------------------------------------------------------------------
 
--include("pm_config.hrl").
+-include("pm_store.hrl").
 
 %%--------------------------------------------------------------------
 %% External exports
