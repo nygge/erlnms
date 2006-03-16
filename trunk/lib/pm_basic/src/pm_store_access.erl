@@ -10,7 +10,7 @@
 %%--------------------------------------------------------------------
 %% Include files
 %%--------------------------------------------------------------------
--include("pm_rec.hrl").
+
 -include("pm_config.hrl").
 
 %%--------------------------------------------------------------------
@@ -29,18 +29,19 @@
 %% External functions
 %%====================================================================
 
-%% %% @spec create(Name,MOI,Store_type) -> Result
+%% %% @spec create(Name,MOI,Store_type,BackEnd) -> Result
 %% %% Name        = atom()
 %% %% MOI         = [RDN]
 %% %% RDN         = {Type,Id}
 %% %% Type        = atom()
 %% %% Id          = atom()
 %% %% Store_type  = atom()
+%% %% BackEnd     = atom()
 %% %% Result      = {atomic,Reply}
 %% %% Reply       = WHAT
 %% %% @doc Create a measurement store.
 
-%% create(Name,MOI,Store_type) when is_atom(name),is_list(MOI),is_atom(Store_type)->
+%% create(Name,MOI,Store_type,BackEnd) when is_atom(name),is_list(MOI),is_atom(Store_type)->
 %%     {Step,DSS,RRA}=get_store_type_def(Store_type),
 %%     [ST]=pm_config:get(pm_store_type,Store_type),
 %%     MO_TYPE=ST#pm_store_type.mo_type,

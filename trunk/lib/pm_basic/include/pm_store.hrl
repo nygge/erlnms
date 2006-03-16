@@ -1,9 +1,9 @@
 %%------------------------------------------------------------
 %% name       = {moi,mo_type}
 %% store_type = atom, pm_mes_type,
-%% file       = string
+%% backend    = atom
 
--record(pm_store_inst,{name,store_type,file}).
+-record(pm_store_inst,{name,store_type,backend}).
 
 %%------------------------------------------------------------
 %% name          = atom, record name

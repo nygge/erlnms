@@ -11,16 +11,15 @@
 %% Include files
 %%--------------------------------------------------------------------
 -include("pm_rec.hrl").
--include("pm_config.hrl").
--include("pm_rrdtool.hrl").
+-include("pm_store.hrl").
+%%-include("pm_rrdtool.hrl").
 
 %%--------------------------------------------------------------------
 %% External exports
 -export([create/3,
-	 fetch/5,
 	 fetch/7,
-	 update/4,
-	 get_events/2]).
+	 update/4
+	]).
 
 %%====================================================================
 %% External functions
@@ -46,61 +45,6 @@ create(Name,MOI,Store_type) when is_atom(name),is_list(MOI),is_atom(Store_type)-
     STORE_INST=#pm_store_inst{name={MOI,MO_TYPE},store_type=Store_type,
 			     file=File},
     {atomic,_Reply}=pm_rrd_config:insert(STORE_INST).
-
-%% %% @spec fetch(MOI,MOC,Res) -> Result
-%% %% MOI         = [RDN]
-%% %% RDN         = {Type,Id}
-%% %% Type        = atom()
-%% %% Id          = atom()
-%% %% MOC         = atom()
-%% %% Res         = 
-%% %% Result      = WHAT
-
-%% fetch(MOI,MOC,Res) ->
-%%     {found,Counters}=pm_rrd_config:get_counters(MOI,MOC,all),
-%%     fetch(MOI,MOC,Counters,Res).
-
-%% @spec fetch(MOI,MOC,Counters,CF,Res) -> Result
-%% MOI         = [RDN]
-%% RDN         = {Type,Id}
-%% Type        = atom()
-%% Id          = atom()
-%% MOC         = atom()
-%% Counters    = [Counter]
-%% Counter     = atom()
-%% CF          = atom
-%% Res         = Duration
-%% Result      = WHAT
-
-fetch(MOI,MOC,Counters,CF,Res) ->
-    Esecs=utils:datetime_to_epoch(calendar:universal_time()),
-    RSecs=utils:duration_to_seconds(Res),
-    Time=utils:epoch_to_datetime((Esecs div RSecs) * RSecs),
-    fetch(MOI,MOC,Counters,CF,Res,Time,Time).
-
-% fetch(MOI,MOC,Res,Start,Stop) ->
-%     {found,Counters}=pm_rrd_config:get_counters(MOI,MOC,all),
-%     fetch(MOI,MOC,Counters,Res,Start,Stop).
-
-%% @spec fetch(MOI,MOC,Counters,CF,Res,Rows,Stop) -> Result
-%% MOI         = [RDN]
-%% RDN         = {Type,Id}
-%% Type        = atom()
-%% Id          = atom()
-%% MOC         = atom()
-%% Counters    = [Counter]
-%% Counter     = atom()
-%% CF          = atom
-%% Res         = Duration
-%% Rows        = integer()
-%% Stop        = datetime()
-%% Result      = WHAT
-
-fetch(MOI,MOC,Counters,CF,Res,Rows,Stop) when is_integer(Rows),Rows>0 ->
-    S=utils:datetime_to_epoch(Stop),
-    D=(Rows-1)*utils:duration_to_seconds(Res),
-    Start=utils:epoch_to_datetime(S-D),
-    fetch(MOI,MOC,Counters,CF,Res,Start,Stop);
 
 %% @spec fetch(MOI,MOC,Counters,CF,Res,Start,Stop) -> Result
 %% MOI         = [RDN]
@@ -139,15 +83,6 @@ update(MOI,MOC,Time,Data) ->
     {found,Counters}=pm_rrd_config:get_counters(MOI,MOC,primary),
     TS1=mk_ts(Time),
     {ok,[TS1]}=rrdtool:update(File,Counters,[{TS1,Data}]).
-
-%% @spec get_events(MOI,MOC) -> Result
-%% MOI         = [RDN]
-%% MOC         = atom()
-%% Result      = {found, Events} | not_found
-%% Events      = [Event]
-%% Event       = {Unit, integer()}
-get_events(MOI,MOC) ->
-    pm_rrd_config:get_events(MOI,MOC).
 
 %%====================================================================
 %% Internal functions
