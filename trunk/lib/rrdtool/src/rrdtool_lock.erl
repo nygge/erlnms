@@ -69,7 +69,7 @@ init([]) ->
 %%          {stop, Reason, Reply, State}   | (terminate/2 is called)
 %%          {stop, Reason, State}            (terminate/2 is called)
 %%--------------------------------------------------------------------
-handle_call(Request, From, State) ->
+handle_call(_Request, _From, State) ->
     Reply = ok,
     {reply, Reply, State}.
 
@@ -88,7 +88,7 @@ handle_cast({release,Pid,Id}, State) ->
     release(Pid,Id,State),
     {noreply,State};
 
-handle_cast(Msg, State) ->
+handle_cast(_Msg, State) ->
     {noreply, State}.
 
 %%--------------------------------------------------------------------
@@ -98,7 +98,7 @@ handle_cast(Msg, State) ->
 %%          {noreply, State, Timeout} |
 %%          {stop, Reason, State}            (terminate/2 is called)
 %%--------------------------------------------------------------------
-handle_info(Info, State) ->
+handle_info(_Info, State) ->
     {noreply, State}.
 
 %%--------------------------------------------------------------------
@@ -106,7 +106,7 @@ handle_info(Info, State) ->
 %% Description: Shutdown the server
 %% Returns: any (ignored by gen_server)
 %%--------------------------------------------------------------------
-terminate(Reason, State) ->
+terminate(_Reason, _State) ->
     ok.
 
 %%--------------------------------------------------------------------
@@ -114,7 +114,7 @@ terminate(Reason, State) ->
 %% Purpose: Convert process state when code is changed
 %% Returns: {ok, NewState}
 %%--------------------------------------------------------------------
-code_change(OldVsn, State, Extra) ->
+code_change(_OldVsn, State, _Extra) ->
     {ok, State}.
 
 %%--------------------------------------------------------------------
@@ -142,7 +142,7 @@ lock1(Pid,Id,Type,Resource,[],State) ->
     grant(Pid,Id,Resource,State);
 
 %% Resource is read locked, grant it.
-lock1(Pid,Id,read,Resource,[#resource{name=Resource,lock=read,locked_by=L,queue=Q}],State) ->
+lock1(Pid,Id,read,Resource,[#resource{name=Resource,lock=read,locked_by=L,queue=_Q}],State) ->
     ets:insert(State#state.resources,#resource{name=Resource,
 					       lock=read,
 					       locked_by=[Id|L],
@@ -168,7 +168,7 @@ lock1(Pid,Id,read,Resource,[#resource{name=Resource,lock=read,locked_by=L,queue=
 % 					       locked_by=L,
 % 					       queue=Q++[{Id,write}]}).
 
-lock1(Pid,Id,RMode,R,[#resource{name=R,lock=LMode,locked_by=L,queue=Q}],State) 
+lock1(_Pid,Id,RMode,R,[#resource{name=R,lock=LMode,locked_by=L,queue=Q}],State) 
   when RMode==write,LMode==read;
        RMode==read,LMode==write;
        RMode==write,LMode==write ->
@@ -177,11 +177,11 @@ lock1(Pid,Id,RMode,R,[#resource{name=R,lock=LMode,locked_by=L,queue=Q}],State)
 					       locked_by=L,
 					       queue=Q++[{Id,RMode}]}).
 
-release(Pid,Id,State) ->
+release(_Pid,Id,State) ->
     release1(ets:lookup(State#state.users,Id),State),
     ets:delete(State#state.users,Id).
 
-release1([],State)->
+release1([],_State)->
     ok;
 release1([#user{name=Id,pid=Pid,resources=Resources,type=_,waits_for=_}],State) ->
     lists:foreach(fun (R)->
@@ -190,19 +190,19 @@ release1([#user{name=Id,pid=Pid,resources=Resources,type=_,waits_for=_}],State) 
 		  end,
 		  Resources).
 
-rel_lock([#resource{name=Name,lock=Lock,locked_by=Id,queue=[]}],Id,State) ->
+rel_lock([#resource{name=Name,lock=_Lock,locked_by=Id,queue=[]}],Id,State) ->
     ets:delete(State#state.resources,Name);
 
-rel_lock([#resource{name=Name,lock=Lock,locked_by=[Id],queue=[]}],Id,State) ->
+rel_lock([#resource{name=Name,lock=_Lock,locked_by=[Id],queue=[]}],Id,State) ->
     ets:delete(State#state.resources,Name);
 
-rel_lock([#resource{name=Name,lock=Lock,locked_by=Id,queue=Q}],Id,State) ->
+rel_lock([#resource{name=Name,lock=_Lock,locked_by=Id,queue=Q}],Id,State) ->
     ets:insert(State#state.resources,#resource{name=Name,lock=none,
 					       locked_by=none,
 					       queue=Q}),
     grant_queued(Name,Q,State);
 
-rel_lock([#resource{name=Name,lock=Lock,locked_by=[Id],queue=Q}],Id,State) ->
+rel_lock([#resource{name=Name,lock=_Lock,locked_by=[Id],queue=Q}],Id,State) ->
     ets:insert(State#state.resources,#resource{name=Name,lock=none,
 					       locked_by=none,
 					       queue=Q}),
@@ -229,16 +229,16 @@ rel_lock([#resource{name=Name,lock=Lock,locked_by=LIds,queue=Q}],Id,State) ->
 	    end
     end.
 
-grant_queued(Resource,[{User,read}|Us]=Q,State) ->
+grant_queued(Resource,[{_User,read}|_Us]=Q,State) ->
     grant_readers(Resource,Q,[],State);
-grant_queued(Resource,[{User,write}|Us]=Q,State) ->
+grant_queued(Resource,[{User,write}|Us],State) ->
     grant_write(Resource,User,Us,State).
 
 grant_readers(Resource,[{U,read}|More],Readers,State) ->
     [User]=ets:lookup(State#state.users,U),
     grant(User#user.pid,User#user.name,Resource,State),
     grant_readers(Resource,More,[User#user.name|Readers],State);
-grant_readers(Resource,[{U,write}|More]=Q,Readers,State) ->
+grant_readers(Resource,[{_U,write}|_More]=Q,Readers,State) ->
     ets:insert(State#state.resources,#resource{name=Resource,
 					       lock=read,
 					       locked_by=Readers,
@@ -257,11 +257,11 @@ grant_write(Resource,UserId,Queue,State) ->
 					       locked_by=UserId,
 					       queue=Queue}).
 
-grant(Pid,User,Resource,State) ->
+grant(_Pid,User,_Resource,State) ->
     grant(ets:lookup(State#state.users,User),State).
 
 grant([#user{name=Id,pid=Pid,resources=_,type=_,waits_for=1}=UserData],State) ->
     Pid!{locked,Id},
     ets:insert(State#state.users,UserData#user{waits_for=0});
-grant([#user{name=Id,pid=Pid,resources=_,type=_,waits_for=N}=UserData],State) ->
+grant([#user{name=_Id,pid=_Pid,resources=_,type=_,waits_for=N}=UserData],State) ->
     ets:insert(State#state.users,UserData#user{waits_for=N-1}).
