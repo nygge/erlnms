@@ -49,7 +49,7 @@ pm_mo_type(Nodes) ->
 pm_counter(Nodes) ->
     mk_tab(Nodes,pm_counter,record_info(fields,pm_counter)).
 pm_der_counter(Nodes) ->
-    mk_tab(Nodes,pm_der_counter,record_info(fields,pm_der_counter));
+    mk_tab(Nodes,pm_der_counter,record_info(fields,pm_der_counter)).
 pm_duration(Nodes) ->
     mk_tab(Nodes,pm_duration,record_info(fields,pm_duration)).
 pm_event(Nodes) ->
