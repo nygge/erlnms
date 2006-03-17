@@ -13,7 +13,6 @@
 %%--------------------------------------------------------------------
 -include("pm_rec.hrl").
 -include("new_pm_data.hrl").
--include("pm_config.hrl").
 
 -include_lib("stdlib/include/ms_transform.hrl").
 
