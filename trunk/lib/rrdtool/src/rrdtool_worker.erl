@@ -108,8 +108,8 @@ code_change(_OldVsn, State, _Extra) ->
 %%% Internal functions
 %%--------------------------------------------------------------------
 
-do_cmd(Port,create,{File,Opts,DSs,RRAs}) ->
-    rrd_lib:create(Port,File,Opts,DSs,RRAs);
+do_cmd(Port,create,Spec) ->
+    rrd_lib:create(Port,Spec);
 
 % do_cmd(Port,{dump,File,ToFile}) ->
 %     ok;
