@@ -8,6 +8,7 @@
 -module(pm_basic_mk_tabs).
 
 -export([all/0,all/1,
+	 pm_db_backend/1,
 	 pm_store_inst/1,
          pm_store_type/1,
          pm_archive/1,
@@ -25,6 +26,7 @@ all() ->
     all([node()]).
 
 all(Nodes) ->
+    pm_db_backend(Nodes),
     pm_store_inst(Nodes),
     pm_store_type(Nodes),
     pm_archive(Nodes),
@@ -36,6 +38,8 @@ all(Nodes) ->
     pm_event(Nodes).
 
 
+pm_db_backend(Nodes) ->
+    mk_tab(Nodes,pm_db_backend,record_info(fields,pm_db_backend)).
 pm_store_inst(Nodes) ->
     mk_tab(Nodes,pm_store_inst,record_info(fields,pm_store_inst)).
 pm_store_type(Nodes) ->
