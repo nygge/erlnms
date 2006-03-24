@@ -19,6 +19,12 @@
 %%--------------------------------------------------------------------
 %% External exports
 -export([start_link/0,start_link/1,
+
+	 new_store_inst/1,
+	 get_store_inst/1,
+	 get_all_store_insts/0,
+	 delete_store_inst/1,
+
 	 id_to_file/2,
 	 file_to_id/1
 	]).
@@ -40,6 +46,19 @@ start_link() ->
     start_link({local, ?SERVER}).
 start_link(Name) ->
     gen_server:start_link(Name, ?MODULE, [], []).
+
+%% Store_Inst
+new_store_inst(Rec) when is_record(Rec,pm_rrd_inst) ->
+    gen_server:call(?SERVER,{new,Rec},infinity).
+
+delete_store_inst(Key) ->
+    gen_server:call(?SERVER,{delete,pm_rrd_inst,Key},infinity).
+
+get_store_inst(Key) ->
+    gen_server:call(?SERVER,{get,pm_rrd_inst,Key},infinity).
+
+get_all_store_insts() ->
+    gen_server:call(?SERVER,{get_all,pm_rrd_inst},infinity).
 
 id_to_file(MO,Meas) ->
     gen_server:call(?SERVER,{id_to_file,MO,Meas}).
@@ -73,15 +92,36 @@ init([]) ->
 %%          {stop, Reason, Reply, State}   | (terminate/2 is called)
 %%          {stop, Reason, State}            (terminate/2 is called)
 %%--------------------------------------------------------------------
+handle_call({new,Record}, _From, State) ->
+    Reply=insert_tab(Record),
+    {reply,Reply,State};
+
+handle_call({delete,Tab,Key}, _From, State) ->
+    Reply=delete(Tab,Key),
+    {reply,Reply,State};
+
+handle_call({get,Tab,Key}, _From, State) ->
+    Reply=read_tab(Tab,Key),
+    {reply,Reply,State};
+
+handle_call({get_all,Tab}, _From, State) ->
+    Reply=get_all(Tab),
+    {reply,Reply,State};
+
 handle_call({id_to_file,MOI,MeasType}, _From, State) ->
-    case read_tab(pm_store_inst,{MOI,MeasType}) of
-	[Rec] ->
-	    {reply,{found,Rec#pm_rrd_inst.file},State};
+    case read_tab(pm_rrd_inst,{MOI,MeasType}) of
+	#pm_rrd_inst{name=_Name,file=File} ->
+	    {reply,{found,File},State};
 	_Other ->
 	    {reply,not_found,State}
     end;
 
 handle_call({file_to_id,_File}, _From, State) ->
+    Reply = ok,
+    {reply, Reply, State};
+
+handle_call(Any, _From, State) ->
+io:format("Any ~p~n",[Any]),
     Reply = ok,
     {reply, Reply, State}.
 
@@ -128,6 +168,9 @@ code_change(_OldVsn, State, _Extra) ->
 insert_tab(Record) when is_record(Record,pm_rrd_inst) ->
     write(Record).
 
+delete(pm_store_inst,Key) ->
+    delete_row(pm_store_inst,Key).
+
 read_tab(Table,Key) ->
     mnesia:dirty_read({Table,Key}).
     
@@ -136,3 +179,13 @@ write(Record) ->
 	      mnesia:write(Record)
       end,
     mnesia:transaction(F).
+
+get_all(Tab) ->
+    [hd(mnesia:dirty_read(Tab,Key)) || Key <- mnesia:dirty_all_keys(Tab)].
+
+delete_row(Tab,Key) ->
+    F=fun() ->
+	      mnesia:delete({Tab,Key})
+      end,
+    mnesia:transaction(F).
+    
