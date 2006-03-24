@@ -12,7 +12,6 @@
 %% Include files
 %%--------------------------------------------------------------------
 -include("pm_rec.hrl").
--include("new_pm_data.hrl").
 
 -include_lib("stdlib/include/ms_transform.hrl").
 
@@ -26,7 +25,6 @@
 -export([init/1, handle_call/3, handle_cast/2, handle_info/2, 
 	 terminate/2, code_change/3]).
 -export([process_data/1]).
--export([check_time/3]).
 
 -record(state, {}).
 
@@ -120,30 +118,5 @@ connect() ->
     pm_raw_data:subscribe(Filter).
 
 process_data(#pm_rec{moi=MOI,moc=MOC,time=Time,data=Data}) ->
-    {ok,[_TS]}=pm_rrd_access:update(MOI,MOC,Time,Data),
-    case pm_config:get_events(MOI,MOC) of
-	{found,Events,Step} ->
-	    S={Unit,No}=pm_config:get_duration(Step),
-	    lists:foreach(fun (EInt) ->
-				  send_event(MOI,MOC,EInt,check_time(Time,EInt,S))
-			  end,Events);
-	not_found ->
-	    ignore
-    end.
+    {ok,[_TS]}=pm_store:update(MOI,MOC,Time,Data).
 
-check_time(TS,EInt,Step) ->
-    Secs=calendar:datetime_to_gregorian_seconds(TS),
-    StepSecs=utils:duration_to_seconds(Step),
-    ESecs=utils:duration_to_seconds(EInt),
-    Latest=ESecs*(Secs div ESecs),
-    case (Secs-Latest)<StepSecs of
-	true ->
-	    {true,calendar:gregorian_seconds_to_datetime(Latest)};
-	false ->
-	    false
-    end.
-
-send_event(MOI,MOT,EInt,{true,Time}) ->
-    pm_data:send(#new_pm_data{moi=MOI,moc=MOT,int=EInt,time=Time});
-send_event(_MOI,_MOT,_EInt,false) ->
-    ok.
