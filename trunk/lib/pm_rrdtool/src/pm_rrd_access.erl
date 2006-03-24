@@ -10,13 +10,14 @@
 %%--------------------------------------------------------------------
 %% Include files
 %%--------------------------------------------------------------------
--include("pm_rec.hrl").
+%%-include("pm_rec.hrl").
 -include("pm_store.hrl").
 -include("pm_rrdtool.hrl").
+-include("rrdtool.hrl").
 
 %%--------------------------------------------------------------------
 %% External exports
--export([create/3,
+-export([create/2,
 	 fetch/7,
 	 update/4
 	]).
@@ -25,8 +26,7 @@
 %% External functions
 %%====================================================================
 
-%% @spec create(Name,MOI,Store_type) -> Result
-%% Name        = atom()
+%% @spec create(MOI,Store_type) -> Result
 %% MOI         = [RDN]
 %% RDN         = {Type,Id}
 %% Type        = atom()
@@ -36,14 +36,19 @@
 %% Reply       = WHAT
 %% @doc Create a measurement store.
 
-create(Name,MOI,Store_type) when is_atom(name),is_list(MOI),is_atom(Store_type)->
-    {Step,DSS,RRA}=get_store_type_def(Store_type),
-    [ST]=pm_rrd_config:get(pm_store_type,Store_type),
-    MO_TYPE=ST#pm_store_type.mo_type,
-    File=mk_file_name(Name,MOI,MO_TYPE),
-    {ok,nothing}=rrdtool:create(File,[Step],DSS,RRA),
-    {atomic,_Reply}=pm_rrd_config:insert(#pm_rrd_inst{name={MOI,MO_TYPE},
-						      file=File}).
+create(MOI,Store) when is_list(MOI) ->
+    MO_TYPE=(Store#pm_store_type.mo_type)#pm_mo_type.name,
+    MOT=Store#pm_store_type.mo_type,
+    Arch=Store#pm_store_type.archive,
+    File=mk_file_name(MOI,MO_TYPE),
+    Cmd=#rrd_file{file=File,
+		  step=(Store#pm_store_type.step)#pm_duration.value,
+		  dss=mkDSs(MOT#pm_mo_type.counters),
+		  rras=mkRRAs(Arch#pm_archive.aggregates)},
+    Res={ok,nothing}=rrdtool:create(Cmd),
+    {atomic,_Reply}=pm_rrd_config:new_store_inst(#pm_rrd_inst{name={MOI,MO_TYPE},
+							      file=File}),
+    Res.
 
 %% @spec fetch(MOI,MOC,Counters,CF,Res,Start,Stop) -> Result
 %% MOI         = [RDN]
@@ -80,38 +85,14 @@ fetch(MOI,MOC,Counters,CF,Res,Start,Stop) when is_tuple(Start) ->
 update(MOI,MOC,Time,Data) ->
     {found,File}=pm_rrd_config:id_to_file(MOI,MOC),
     {found,Counters}=pm_rrd_config:get_counters(MOI,MOC,primary),
-    TS1=mk_ts(Time),
+    TS1=time:datetime_to_epoch(Time),
     {ok,[TS1]}=rrdtool:update(File,Counters,[{TS1,Data}]).
 
 %%====================================================================
 %% Internal functions
 %%====================================================================
 
-get_store_type_def(Name) ->
-    STORE_TYPE=pm_rrd_config:get(pm_store_type,Name),
-    [#pm_store_type{name=Name,mo_type=MOC,archive=Arch,step=Step}]=STORE_TYPE,
-    MO_TYPE=pm_rrd_config:get(pm_mo_type,MOC),
-    [#pm_mo_type{name=MOC,counters=Counters,der_counters=_DC}]=MO_TYPE,
-    Cs=lists:map(fun (C) ->
-			 [#pm_counter{name={MOC,C},
-				      type=T,
-				      hb=HB,
-				      min=MIN,
-				      max=MAX}]=pm_rrd_config:get(pm_counter,{MOC,C}),
-			 HB1=pm_config:get_duration(HB),
-			 {C,T,HB1,MIN,MAX}
-		 end, Counters),
-    ARec=pm_rrd_config:get(pm_archive,Arch),
-    [#pm_archive{name=Arch,aggregates=AGRS}]=ARec,
-    As=lists:map(fun(A) ->
-			 [R]=pm_rrd_config:get(pm_aggregate,A),
-			 Dur=pm_config:get_duration(R#pm_aggregate.duration),
-			 Res=pm_config:get_duration(R#pm_aggregate.resolution),
-			 {R#pm_aggregate.cf,R#pm_aggregate.xff,Res,Dur}
-		 end, AGRS),
-    {{step,pm_config:get_duration(Step)},Cs,As}.
-
-mk_file_name(_Name,MOI,Meas_type) ->
+mk_file_name(MOI,Meas_type) ->
     {ok,Root}={ok,"/home/anders/src/data/pm/"}, %%%application:get_env(root_dir),
     Path=[Root]++lists:foldr(fun ({C,I},Acc) ->
 				   [C,I]++Acc
@@ -123,16 +104,23 @@ mk_file_name(_Name,MOI,Meas_type) ->
     filelib:ensure_dir(File),
     File.
 
+mkDSs(Counters) ->
+    [#rrd_ds{name=N,type=T,hb=HB#pm_duration.value,min=Min,max=Max} ||
+	#pm_counter{name={_,N},type=T,hb=HB,min=Min,max=Max} <- Counters].
+
+mkRRAs(Aggregates) ->
+    [#rrd_rra{cf=CF,xff=XFF,
+	      interval=Int#pm_duration.value,
+	      duration=Dur#pm_duration.value} ||
+	#pm_aggregate{name=_,cf=CF,xff=XFF,resolution=Int,duration=Dur} 
+	    <- Aggregates].
+
 to_string(X) when is_atom(X) ->
     atom_to_list(X);
 to_string(X) when is_integer(X) ->
     integer_to_list(X);
 to_string(X) when is_list(X) ->
     X.
-
-mk_ts(TS) ->
-    Epoch=calendar:datetime_to_gregorian_seconds({{1970,1,1},{0,0,0}}),
-    calendar:datetime_to_gregorian_seconds(TS)-Epoch.
 
 order_counters(MOI,MOC,Counters) ->
     {PCs,DCs}=lists:foldl(fun (Cnt,Acc) ->
