@@ -5,6 +5,8 @@
 %%%
 %%% Created : 29 Mar 2006 by Anders Nygren <anders@telteq.com.mx>
 %%%-------------------------------------------------------------------
+%% @private
+
 -module(ast_man_app).
 
 -behaviour(application).

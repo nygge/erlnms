@@ -5,6 +5,8 @@
 %%%
 %%% Created : 29 Mar 2006 by Anders Nygren <anders@telteq.com.mx>
 %%%-------------------------------------------------------------------
+%% @private
+
 -module(ast_man_sup).
 
 -behaviour(supervisor).
@@ -46,7 +48,7 @@ init([]) ->
 	      permanent,2000,worker,[ast_manager]},
     AstDrv = {ast_drv,{ast_man_drv,start_link,[]},
 	      permanent,2000,worker,[ast_man_drv]},
-    {ok,{{one_for_all,100,1}, [AstDrv,AstEvt,AstMan]}}.
+    {ok,{{one_for_all,100,1000}, [AstDrv,AstEvt,AstMan]}}.
 
 %%====================================================================
 %% Internal functions

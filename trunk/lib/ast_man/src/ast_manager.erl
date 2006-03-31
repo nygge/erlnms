@@ -56,56 +56,61 @@
 
 %% API
 -export([start_link/0,
-%% 	 absolute_timeout
-%% 	 agent_callback_login
-%% 	 agent_logoff
-%% 	 agents
-%% 	 change_monitor
-%% 	 command
-%% 	 db_get
-%% 	 db_put
-%% 	 events
-%% 	 extension_state
-%% 	 get_var
-%% 	 hangup
-%% 	 iax_netstats
-%% 	 iax_peers
-%% 	 list_commands
-%% 	 logoff
+	 subscribe/3,
+ 	 absolute_timeout/2,
+ 	 agent_callback_login/2,agent_callback_login/5,
+ 	 agent_logoff/1,agent_logoff/2,
+ 	 agents/0,
+ 	 change_monitor/2,
+ 	 command/1,
+ 	 db_get/2,
+ 	 db_put/3,
+ 	 events/1,
+ 	 extension_state/2,
+ 	 get_var/2,
+ 	 hangup/1,
+ 	 iax_netstats/0,
+ 	 iax_peers/0,
+ 	 list_commands/0,
+ 	 logoff/0,
 	 mailboxcount/1,
-%% 	 mailbox_status
-%% 	 monitor
+ 	 mailbox_status/1,
+ 	 monitor/4,
 %% 	 originate
-%% 	 parked_calls
+ 	 parked_calls/0,
  	 ping/0,
-%% 	 queue_add
-%% 	 queue_pause
-%% 	 queue_remove
-%% 	 queues
-%% 	 queue_status
-%% 	 redirect
-%% 	 set_cdr_user_field
-%% 	 set_var
+ 	 queue_add/4,
+ 	 queue_pause/3,
+ 	 queue_remove/2,
+ 	 queues/0,
+ 	 queue_status/0,
+ 	 redirect/5,
+ 	 set_cdr_user_field/3,
+ 	 set_var/3,
 	 sip_peers/0,
 	 sip_showpeer/1,
-	 status/0
-%% 	 stop_monitor
-%% 	 zap_dial_offhook
-%% 	 zap_dnd_off
-%% 	 zap_dnd_on
-%% 	 zap_hangup
-%% 	 zap_show_channels
+	 status/0,status/1,
+ 	 stop_monitor/1,
+ 	 zap_dial_offhook/2,
+ 	 zap_dnd_off/1,
+ 	 zap_dnd_on/1,
+ 	 zap_hangup/1,
+ 	 zap_show_channels/0
 %% 	 zap_transfer
 	]).
 
+-include("manager_api.hrl").
 
 %% gen_server callbacks
 -export([init/1, handle_call/3, handle_cast/2, handle_info/2,
 	 terminate/2, code_change/3]).
 
+%% ast_man_drv callbacks
+-export([new_pdu/1]).
+
 -define(SERVER,?MODULE).
 
--record(state, {sock,rest=[]}).
+-record(state, {queue,pending,list_resp=false,resp_acc=[],state}).
 
 %%====================================================================
 %% API
@@ -114,64 +119,218 @@
 %% Function: start_link() -> {ok,Pid} | ignore | {error,Error}
 %% Description: Starts the server
 %%--------------------------------------------------------------------
+%% @doc Start the manager server
 start_link() ->
     gen_server:start_link({local, ?SERVER}, ?MODULE, [], []).
 
-%% 	 absolute_timeout(Channel,Timeout)
-%% 	 agent_callback_login(Agent,Exten)
-%% 	 agent_callback_login(Agent,Exten,Context,AckCall,WrapUpTime)
-%% 	 agent_logoff(Agent)
-%% 	 agent_logoff(Agent,Soft)
-%% 	 agents()
-%% 	 change_monitor(Channel,File)
-%% 	 command(Command)
-%% 	 db_get ????
-%% 	 db_put ???
-%% 	 events(EventMask)
-%% 	 extension_state(Extension,Context)
-%% 	 get_var(Channel,Var)
-%% 	 hangup(Channel)
-%% 	 iax_netstats()
-%% 	 iax_peers()
-%% 	 list_commands()
-%% 	 logoff()
+%% @doc Subscribe to events.
+subscribe(User,Secret,Events) ->
+    ast_man_events:subscribe(User,Secret,Events).
 
+%% @doc Receive new pdu from asterisk.
+%% @private
+new_pdu(Msg) ->
+    gen_server:cast(?SERVER,{pdu,Msg}).
+
+%%@doc Set Absolute Timeout.
+absolute_timeout(Channel,Timeout) ->
+    gen_server:call(?SERVER,{req,#absolute_timeout{channel=Channel,
+						   timeout=Timeout}}).
+
+%% @doc Sets an agent as logged in by callback.
+agent_callback_login(Agent,Exten) ->
+    gen_server:call(?SERVER,{req,#agent_callback_login{agent=Agent,
+						       exten=Exten}}).
+
+%% @doc Sets an agent as logged in by callback.
+agent_callback_login(Agent,Exten,Context,AckCall,WrapUpTime) ->
+    gen_server:call(?SERVER,{req,#agent_callback_login{agent=Agent,
+						       exten=Exten,
+						       context=Context,
+						       ackCall=AckCall,
+						       wrapUpTime=WrapUpTime}}).
+
+%% @doc Sets an agent as no longer logged in.
+%% @equiv agent_logoff(Agent,true)
+agent_logoff(Agent) ->
+    agent_logoff(Agent,true).
+
+%% @doc Sets an agent as no longer logged in.
+agent_logoff(Agent,Soft) ->
+    gen_server:call(?SERVER,{req,#agent_logoff{agent=Agent,
+					       soft=Soft}}).
+
+%% @doc Lists agents and their status.
+agents() ->
+    gen_server:call(?SERVER,{req,#agents{}}).
+
+%% @doc Change monitoring filename of a channel.
+change_monitor(Channel,File) ->
+    gen_server:call(?SERVER,{req,#change_monitor{channel=Channel,
+						  file=File}}).
+
+%% @doc Execute Asterisk CLI Command.
+command(Command) ->
+    gen_server:call(?SERVER,{req,#command{command=Command}}).
+
+%% @doc Get DB Entry.
+db_get(Family,Key) ->
+    gen_server:call(?SERVER,{req,#db_get{family=Family,key=Key}}).
+
+%% @doc Put DB Entry.
+db_put(Family,Key,Value) ->
+    gen_server:call(?SERVER,{req,#db_put{family=Family,key=Key,value=Value}}).
+
+%% @doc Control Event Flow.
+events(EventMask) ->
+    gen_server:call(?SERVER,{req,#events{eventMask=EventMask}}).
+
+%% @doc Check Extension Status.
+extension_state(Extension,Context) ->
+    gen_server:call(?SERVER,{req,#extension_state{extension=Extension,
+						  context=Context}}).
+
+%% @doc Gets a Channel Variable.
+get_var(Channel,Var) ->
+    gen_server:call(?SERVER,{req,#get_var{channel=Channel,var=Var}}).
+
+%% @doc Hangup Channel.
+hangup(Channel) ->
+    gen_server:call(?SERVER,{req,#hangup{channel=Channel}}).
+
+%% @doc Show IAX Netstats.
+iax_netstats() ->
+    gen_server:call(?SERVER,{req,#iax_netstats{}}).
+
+%% @doc List IAX Peers.
+iax_peers() ->
+    gen_server:call(?SERVER,{req,#iax_peers{}}).
+
+%% @doc List available manager commands.
+list_commands() ->
+    gen_server:call(?SERVER,{req,#list_commands{}}).
+
+%% @doc Logoff Manager.
+logoff() ->
+    gen_server:call(?SERVER,{req,#logoff{}}).
+
+%% @doc Check Mailbox Message Count.
 mailboxcount(Mbox) ->
-    gen_server:call(?SERVER,{mailboxcount,Mbox}).
+    gen_server:call(?SERVER,{req,#mailboxcount{mailbox=Mbox}}).
 
-%% 	 mailbox_status(Mailbox)
-%% 	 monitor(Channel,File,Format,Mix)
-%% 	 originate(Channel,......)
-%% 	 parked_calls()
+%% @doc Check Mailbox.
+mailbox_status(Mailbox) ->
+    gen_server:call(?SERVER,{req,#mailbox_status{mailbox=Mailbox}}).
 
+%% @doc Monitor a channel.
+monitor(Channel,File,Format,Mix) ->
+    gen_server:call(?SERVER,{req,#monitor{channel=Channel,
+					  file=File,
+					  format=Format,
+					  mix=Mix}}).
+
+%% %@doc Originate Call.
+%% originate(Channel,......) ->
+%% gen_server:call(?SERVER,{req,#originate{channel}}).
+
+%% @doc List parked calls.
+parked_calls() ->
+    gen_server:call(?SERVER,{req,#parked_calls{}}).
+
+%% @doc Keepalive command.
 ping() ->
-    gen_server:call(?SERVER,ping).
+    gen_server:call(?SERVER,{req,#ping{}}).
 
-%% 	 queue_add ????
-%% 	 queue_pause(Queue ???)
-%% 	 queue_remove ???
-%% 	 queues()
-%% 	 queue_status(Queue)
-%% 	 redirect(Channel,Exten,Context,Priority)
-%% 	 set_cdr_user_field ???
-%% 	 set_var(Channel,Variable,Value)
+%% @doc Add interface to queue.
+queue_add(Interface,Queue,Penalty,Pause) ->
+    gen_server:call(?SERVER,{req,#queue_add{interface=Interface,
+					    queue=Queue,
+					    penalty=Penalty,
+					    pause=Pause}}).
 
+%% @doc Makes a queue member temporarily unavailable.
+queue_pause(Interface,Queue,Pause) ->
+    gen_server:call(?SERVER,{req,#queue_pause{interface=Interface,
+					      queue=Queue,
+					      pause=Pause}}).
+
+%% @doc Remove interface from queue.
+queue_remove(Interface,Queue) ->
+    gen_server:call(?SERVER,{req,#queue_remove{interface=Interface,
+					       queue=Queue}}).
+
+%% @doc Queues.
+queues() ->
+    gen_server:call(?SERVER,{req,#queues{}}).
+
+%% @doc Queue Status.
+queue_status() ->
+    gen_server:call(?SERVER,{req,#queue_status{}}).
+
+%% @doc Redirect (transfer) a call.
+redirect(Channel,ExtraChannel,Exten,Context,Priority) ->
+    gen_server:call(?SERVER,{req,#redirect{channel=Channel,
+					   extrachannel=ExtraChannel,
+					   exten=Exten,
+					   context=Context,
+					   priority=Priority}}).
+
+%% @doc Set the CDR UserField.
+set_cdr_user_field(Channel,Userfield,Append) ->
+    gen_server:call(?SERVER,{req,#set_cdr_user_field{channel=Channel,
+						     userfield=Userfield,
+						     append=Append}}).
+
+%% @doc Set Channel Variable.
+set_var(Channel,Variable,Value) ->
+    gen_server:call(?SERVER,{req,#set_var{channel=Channel,
+					  variable=Variable,
+					  value=Value}}).
+
+%% @doc Show SIP peer (text format).
 sip_showpeer(Peer) ->
-    gen_server:call(?SERVER,{sip_showpeer,Peer}).
+    gen_server:call(?SERVER,{req,#sip_showpeer{peer=Peer}}).
 
+%% @doc List SIP peers (text format).
 sip_peers() ->
-    gen_server:call(?SERVER,sip_peers).
+    gen_server:call(?SERVER,{req,#sip_peers{}}).
 
+%% @doc Lists channel status for all channels.
 status() ->
-    gen_server:call(?SERVER,status).
+    gen_server:call(?SERVER,{req,#status{}}).
 
-%% 	 stop_monitor
-%% 	 zap_dial_offhook
-%% 	 zap_dnd_off
-%% 	 zap_dnd_on
-%% 	 zap_hangup
-%% 	 zap_show_channels
-%% 	 zap_transfer
+%% @doc Lists channel status.
+status(Channel) ->
+    gen_server:call(?SERVER,{req,#status{channel=Channel}}).
+
+%% @doc Stop monitoring a channel.
+stop_monitor(Channel) ->
+    gen_server:call(?SERVER,{req,#stop_monitor{channel=Channel}}).
+
+%% @doc Dial over Zap channel while offhook.
+zap_dial_offhook(Channel,Number) ->
+    gen_server:call(?SERVER,{req,#zap_dial_offhook{channel=Channel,
+						   number=Number}}).
+
+%% @doc Toggle Zap channel Do Not Disturb status OFF.
+zap_dnd_off(Channel) ->
+    gen_server:call(?SERVER,{req,#zap_dnd_off{channel=Channel}}).
+
+%% @doc Toggle Zap channel Do Not Disturb status ON.
+zap_dnd_on(Channel) ->
+    gen_server:call(?SERVER,{req,#zap_dnd_on{channel=Channel}}).
+
+%% @doc Hangup Zap Channel.
+zap_hangup(Channel) ->
+    gen_server:call(?SERVER,{req,#zap_hangup{channel=Channel}}).
+
+%% @doc Show status zapata channels.
+zap_show_channels() ->
+    gen_server:call(?SERVER,{req,#zap_show_channels{}}).
+
+%% %@doc Transfer Zap Channel.
+%% zap_transfer() ->
+%% gen_server:call(?SERVER,{req,#zap_transfer{}}).
 
 %%====================================================================
 %% gen_server callbacks
@@ -183,11 +342,11 @@ status() ->
 %%                         ignore               |
 %%                         {stop, Reason}
 %% Description: Initiates the server
+%% @private
 %%--------------------------------------------------------------------
 init([]) ->
-    {ok,Sock} = gen_tcp:connect({192,168,1,50},5038,[list]),
-    login(Sock),
-    {ok, #state{sock=Sock}}.
+    AId=login("Anders","Secret"),
+    {ok, #state{queue=queue:new(),pending={AId,self,login},state=login}}.
 
 %%--------------------------------------------------------------------
 %% Function: %% handle_call(Request, From, State) -> {reply, Reply, State} |
@@ -197,32 +356,29 @@ init([]) ->
 %%                                      {stop, Reason, Reply, State} |
 %%                                      {stop, Reason, State}
 %% Description: Handling call messages
+%% @private
 %%--------------------------------------------------------------------
-handle_call({mailboxcount,Mbox}, _From, State) ->
-    Reply=mailboxcount(State#state.sock,Mbox),
-    {reply, Reply, State};
-handle_call(ping, _From, State) ->
-    Reply=ping(State#state.sock),
-    {reply, Reply, State};
-handle_call({sip_showpeer,Peer}, _From, State) ->
-    Reply=sip_showpeer(State#state.sock,Peer),
-    {reply, Reply, State};
-handle_call(sip_peers, _From, State) ->
-    Reply=sip_peers(State#state.sock),
-    {reply, Reply, State};
-handle_call(status, _From, State) ->
-    Reply=status(State#state.sock),
-    {reply, Reply, State};
-handle_call(_Request, _From, State) ->
-    Reply = ok,
-    {reply, Reply, State}.
+handle_call({req,Req}, From, State) when State#state.state==free ->
+    Pdu=make_pdu(Req),
+    AId=ast_man_drv:send(Pdu),
+    {noreply, State#state{pending={AId,From,Req}}};
+
+handle_call({req,Request}, From, State) ->
+    Q=State#state.queue,
+    Q1=queue:in({Request,From},Q),
+    {noreply, State#state{queue=Q1}}.
 
 %%--------------------------------------------------------------------
 %% Function: handle_cast(Msg, State) -> {noreply, State} |
 %%                                      {noreply, State, Timeout} |
 %%                                      {stop, Reason, State}
 %% Description: Handling cast messages
+%% @private
 %%--------------------------------------------------------------------
+handle_cast({pdu,Msg}, State) ->
+    S1=handle_pdu(msg_type(Msg),State),
+    {noreply, S1};
+
 handle_cast(_Msg, State) ->
     {noreply, State}.
 
@@ -231,15 +387,8 @@ handle_cast(_Msg, State) ->
 %%                                       {noreply, State, Timeout} |
 %%                                       {stop, Reason, State}
 %% Description: Handling all non call/cast messages
+%% @private
 %%--------------------------------------------------------------------
-handle_info({tcp,_Sock,"Asterisk Call Manager"++_More}, State) ->
-    {noreply, State};
-handle_info({tcp,_Sock,Data}, State) ->
-    {Msgs,Rest}=parse(State#state.rest ++ Data),
-    lists:foreach(fun (Msg) ->
-			  io:format("Got ~p~n",[Msg])
-		  end,Msgs),
-    {noreply, State#state{rest=Rest}};
 handle_info(_Info, State) ->
     {noreply, State}.
 
@@ -249,6 +398,7 @@ handle_info(_Info, State) ->
 %% terminate. It should be the opposite of Module:init/1 and do any necessary
 %% cleaning up. When it returns, the gen_server terminates with Reason.
 %% The return value is ignored.
+%% @private
 %%--------------------------------------------------------------------
 terminate(_Reason, _State) ->
     ok.
@@ -256,6 +406,7 @@ terminate(_Reason, _State) ->
 %%--------------------------------------------------------------------
 %% Func: code_change(OldVsn, State, Extra) -> {ok, NewState}
 %% Description: Convert process state when code is changed
+%% @private
 %%--------------------------------------------------------------------
 code_change(_OldVsn, State, _Extra) ->
     {ok, State}.
@@ -263,78 +414,270 @@ code_change(_OldVsn, State, _Extra) ->
 %%--------------------------------------------------------------------
 %%% Internal functions
 %%--------------------------------------------------------------------
-login(Sock) ->
-    Pack="Action: login\r\n"
-	"Username: anders\r\n"
-	"Secret: secret\r\n",
-    ast_man_drv:send(Sock,Pack).
-    
-mailboxcount(Sock,Mbox) ->
-    Pack=["Action: MailboxCount\r\n",
-	  "Mailbox: ",Mbox,"\r\n"],
-    ast_man_drv:send(Sock,Pack).
+login(User,Secret) ->
+    Pdu=make_pdu(#login{user=User,secret=Secret}),
+    ast_man_drv:send(Pdu).
 
-ping(Sock) ->
-    Pack="Action: Ping\r\n",
-    ast_man_drv:send(Sock,Pack).
+make_pdu(#absolute_timeout{channel=Channel,timeout=Timeout} ) ->
+    ["Action: AbsoluteTimeout\r\n"
+     "Channel: ",Channel,"\r\n"
+     "Timeout: ",Timeout,"\r\n"];
+
+make_pdu(#agent_callback_login{agent=Agent,
+			       exten=Exten,
+			       context=Context,
+			       ackCall=AckCall,
+			       wrapUpTime=WrapUpTime} ) ->
+    ["Action: AgentCallBackLogin \r\n"
+     "Agent: ",Agent,"\r\n"
+     "Exten: ",Exten,"\r\n"
+     "Context: ",Context,"\r\n"
+     "AckCall: ",AckCall,"\r\n"
+     "WrapUpTime: ",WrapUpTime,"\r\n"];
+
+make_pdu( #agent_logoff{agent=Agent,soft=Soft}) ->
+    ["Action: AgentLogoff\r\n"
+     "Agent: ",Agent,"\r\n"
+     "soft: ",Soft,"\r\n"];
+
+make_pdu(#agents{} ) ->
+    "Action: Agents\r\n";
+
+make_pdu(#change_monitor{channel=Channel,file=File} ) ->
+    ["Action: ChangeMonitor\r\n"
+     "Channel: ",Channel,"\r\n"
+     "File: ",File,"\r\n"];
+
+make_pdu(#command{command=Command} ) ->
+    ["Action: Command\r\n"
+     "Command: ",Command,"\r\n"];
+
+make_pdu(#db_get{family=Family,key=Key} ) ->
+    ["Action: DBGet\r\n"
+     "Family: ",Family,"\r\n"
+     "Key: ",Key ,"\r\n"];
+
+make_pdu(#db_put{family=Family,key=Key,value=Value} ) ->
+    ["Action: DBPut\r\n"
+     "Family: ",Family,"\r\n"
+     "Key: ",Key,"\r\n"
+     "Value: ",Value,"\r\n"];
+
+make_pdu(#events{eventMask=EventMask} ) ->
+    ["Action: Events\r\n"
+     "EventMask: ",EventMask,"\r\n"];
+
+make_pdu(#extension_state{extension=Extension,context=Context} ) ->
+    ["Action: ExtensionState\r\n"
+     "Extension: ",Extension,"\r\n"
+     "Context: ",Context,"\r\n"];
+
+make_pdu(#get_var{channel=Channel,var=Var}) ->
+    ["Action: GetVar\r\n"
+     "Channel: ",Channel,"\r\n"
+     "Var: ",Var,"\r\n"];
+
+make_pdu(#hangup{channel=Channel}) ->
+    ["Action: Hangup\r\n"
+     "Channel: ",Channel,"\r\n"];
+
+make_pdu(#iax_netstats{} ) ->
+    "Action: IAXnetstats\r\n";
+
+make_pdu(#iax_peers{} ) ->
+    "Action: IAXPeers\r\n";
+
+make_pdu(#list_commands{} ) ->
+    "Action: ListCommands\r\n";
+
+make_pdu(#login{user=User,secret=Secret}) ->
+    ["Action: login\r\n"
+     "Username: ",User,"\r\n"
+     "Secret: ",Secret,"\r\n"];
+
+make_pdu(#mailboxcount{mailbox=Mbox}) ->
+    ["Action: MailboxCount\r\n",
+     "Mailbox: ",Mbox,"\r\n"];
+
+make_pdu(#mailbox_status{mailbox=Mailbox}) ->
+    ["Action: MailboxStatus\r\n"
+     "Mailbox: ",Mailbox,"\r\n"];
     
-sip_showpeer(Sock,Peer) ->
-    Pack=["Action: SIPshowpeer\r\n",
-	  "Peer: ",Peer,"\r\n"],
-    ast_man_drv:send(Sock,Pack).
+make_pdu(#monitor{channel=Channel,file=File,format=Format,mix=Mix}) ->
+    ["Action: Monitor\r\n"
+     "Channel: ",Channel,"\r\n"
+     "File: ",File,"\r\n"
+     "Format: ",Format,"\r\n"
+     "Mix: ",Mix,"\r\n"];
     
-sip_peers(Sock) ->
-    Pack="Action: SIPpeers\r\n",
-    ast_man_drv:send(Sock,Pack).
+make_pdu(#parked_calls{}) ->
+    "Action: ParkedCalls\r\n";
     
-status(Sock) ->
-    Pack="Action: Status\r\n",
-    ast_man_drv:send(Sock,Pack).
+make_pdu(#ping{}) ->
+    "Action: Ping\r\n";
+
+make_pdu(#queue_add{interface=Interface,
+		    queue=Queue,
+		    penalty=Penalty,
+		    pause=Pause}) ->
+    ["Action: QueueAdd\r\n"
+     "Interface: ",Interface,"\r\n"
+     "Queue: ",Queue,"\r\n"
+     "Penalty: ",Penalty,"\r\n"
+     "Pause: ",Pause,"\r\n"  ];
+    
+make_pdu(#queue_pause{interface=Interface,
+		      queue=Queue,
+		      pause=Pause}) ->
+    ["Action: QueuePause\r\n"
+     "Interface: ",Interface,"\r\n"
+     "Queue: ",Queue,"\r\n"
+     "Pause: ",Pause,"\r\n"  ];
+    
+make_pdu(#queue_remove{interface=Interface,
+		       queue=Queue}) ->
+    ["Action: QueueRemove\r\n"
+     "Interface: ",Interface,"\r\n"
+     "Queue: ",Queue, "\r\n"  ];
+    
+make_pdu(#queues{}) ->
+    ["Action: Queues\r\n"
+     ];
+    
+make_pdu(#queue_status{}) ->
+    ["Action: QueueStatus\r\n"
+     ];
+    
+make_pdu(#redirect{channel=Channel,
+		   extrachannel=ExtraChannel,
+		   exten=Exten,
+		   context=Context,
+		   priority=Priority}) ->
+    ["Action: Redirect\r\n"
+     "Channel: ",Channel,"\r\n"
+     "Extrachannel: ",ExtraChannel,"\r\n"
+     "Exten: ",Exten,"\r\n"
+     "Context: ",Context,"\r\n"
+     "Priority: ",Priority , "\r\n" ];
+    
+make_pdu(#set_cdr_user_field{channel=Channel,
+			     userfield=Userfield,
+			     append=Append}) ->
+    ["Action: SetCDRUserField\r\n"
+     "Channel: ",Channel,"\r\n"
+     "Userfield: ",Userfield,"\r\n"
+     "Append: ",Append, "\r\n"   ];
+    
+make_pdu(#set_var{channel=Channel,
+		  variable=Variable,
+		  value=Value}) ->
+    ["Action: SetVar\r\n"
+     "Channel: ",Channel,"\r\n"
+     "Variable: ",Variable,"\r\n"
+     "Value: ",Value, "\r\n"   ];
+    
+make_pdu(#sip_showpeer{peer=Peer}) ->
+    ["Action: SIPshowpeer\r\n",
+     "Peer: ",Peer,"\r\n"];
+
+make_pdu(#sip_peers{}) ->
+    "Action: SIPpeers\r\n";
+
+make_pdu(#status{}) ->
+    "Action: Status\r\n";
+    
+make_pdu(#stop_monitor{channel=Channel}) ->
+    ["Action: StopMonitor\r\n"
+     "Channel: ",Channel,"\r\n"];
+    
+make_pdu(#zap_dial_offhook{channel=Channel,
+			   number=Number}) ->
+    ["Action: ZapDialOffhook\r\n"
+     "Channel: ",Channel,"\r\n"
+     "Number: ",Number,"\r\n"];
+    
+make_pdu(#zap_dnd_off{channel=Channel}) ->
+    ["Action: ZapDNDOff\r\n"
+     "Channel: ",Channel,"\r\n"];
+    
+make_pdu(#zap_dnd_on{channel=Channel}) ->
+    ["Action: ZapDNDOn\r\n"
+     "Channel: ",Channel,"\r\n"];
+    
+make_pdu(#zap_hangup{channel=Channel}) ->
+    ["Action: ZapHangup\r\n"
+     "Channel: ",Channel,"\r\n"];
+    
+make_pdu(#zap_show_channels{}) ->
+    "Action: ZapShowChannels\r\n".
     
 %%--------------------------------------------------------------------
 %%
 %%--------------------------------------------------------------------
-send(Sock,Pack) ->
-    io:format("sending ~p~n",[Pack]),
-    case gen_tcp:send(Sock,Pack) of
- 	ok ->
- 	    ok;
- 	{error,Error} ->
- 	    Error
+
+msg_type(Msg) ->
+    case check_event(Msg) of
+	false ->
+	    check_result(Msg);
+	Result ->
+	    Result
     end.
 
-parse(Data) ->
-    parse_it(Data,[]).
+check_event(Msg) ->
+    check_event1(lists:keysearch("Event",1,Msg),Msg).
 
-parse_it(Data,Acc) ->
-    case split(Data) of
-	{nothing,Rest} ->
-	    {lists:reverse(Acc),Rest};
-	{Msg,More} ->
-	    Msg1=msg_type(Msg),
-	    parse_it(More,[Msg1|Acc])
-    end.
+check_event1({value,{"Event",Type}},Msg) ->
+    case lists:keysearch("ActionID",1,Msg) of
+	{value,{"ActionID",AId}} ->
+	    {response,AId,undefined,Msg};
+	false  ->
+	    {event,Type,Msg}
+    end;
 
-split(Data) ->
-    case string:str(Data,"\r\n\r\n") of
-	Pos when Pos>0 ->
-	    Msg=string:substr(Data,1,Pos-1),
-	    Msg1=string:tokens(Msg,"\r\n"),
-	    Msg2=[split_line(L)|| L<- Msg1],
-	    More=string:substr(Data,Pos+4),
-	    {Msg2,More};
-	_NotFound ->
-	    {nothing,Data}
-    end.
-%%
+check_event1(false,_Msg) ->
+    false.
 
-split_line(L) ->
-    Pos=string:str(L,": "),
-    Lbl=string:substr(L,1,Pos-1),
-    Value=string:substr(L,Pos+2),
-    {Lbl,Value}.
-    
-msg_type([{"Event",_EventType}|_More]=Msg) ->
-    {event,Msg};
-msg_type([{"Response",_EventType}|_More]=Msg) ->
-    {response,Msg}.
+check_result(Msg) ->
+    {value,{"Response",Result}}=lists:keysearch("Response",1,Msg),
+    {value,{"ActionID",AId}}=lists:keysearch("ActionID",1,Msg),
+    {response,list_to_integer(AId),Result,Msg}.
+
+handle_pdu({response,AId,Res,Pdu},State) ->
+    handle_response(State#state.pending,Res,Pdu,State);
+
+handle_pdu({event,_Event,_Pdu}=M,State) ->
+    ast_man_events:event(M),
+    State.
+
+handle_response({_AId,_From,login},_Res,_Pdu,State) ->
+    State#state{pending=undefined,state=free};
+
+%% handle_response({AId,From,Cmd},undefined,Pdu,State) ->
+%%     io:format("~p~n",[Pdu]),
+%%     State;
+
+handle_response({AId,From,Cmd},Res,Pdu,State) when State#state.list_resp==false ->
+    case lists:keysearch("Message",1,Pdu) of
+	{value,{"Message",Txt}} ->
+	    State#state{list_resp=true,
+			resp_acc=[Pdu|State#state.resp_acc]};
+	false ->
+	    gen_server:reply(From,{Cmd,Res,Pdu}),
+	    State#state{pending=undefined,state=free}
+    end;
+handle_response({AId,From,Cmd},Res,Pdu,State) ->
+    case lists:keysearch("Event",1,Pdu) of
+	{value,{"Event","PeerlistComplete"}} ->
+	    resp_done(From,Cmd,State);
+	{value,{"Event","StatusComplete"}} ->
+	    resp_done(From,Cmd,State);
+	{value,{"Event",Evt}} ->
+	    State#state{list_resp=true,
+			resp_acc=[Pdu|State#state.resp_acc]}
+    end.    
+
+resp_done(From,Cmd,State) ->
+    Resp=lists:reverse(State#state.resp_acc),
+    gen_server:reply(From,{Cmd,success,Resp}),
+    State#state{pending=undefined,state=free,
+		resp_acc=[],list_resp=false}.

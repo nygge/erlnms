@@ -11,7 +11,7 @@
 
 %% API
 -export([start_link/0,
-	 send/2
+	 send/1
 	]).
 
 
@@ -26,7 +26,7 @@
 
 -define(SERVER,?MODULE).
 
--record(state, {state,queue,from,aid=0,sock,rest=[]}).
+-record(state, {from,aid=0,sock,rest=[]}).
 
 %%====================================================================
 %% API
@@ -39,13 +39,14 @@ start_link() ->
     gen_server:start_link({local, ?SERVER}, ?MODULE, [], []).
 
 send(Request) ->
-    gen_server:call(?SERVER,{api,Request,self()}).
+    gen_server:call(?SERVER,{api,Request}).
 
 %%====================================================================
 %% gen_server callbacks
 %%====================================================================
 
 %%--------------------------------------------------------------------
+%% @private
 %% Function: init(Args) -> {ok, State} |
 %%                         {ok, State, Timeout} |
 %%                         ignore               |
@@ -54,11 +55,10 @@ send(Request) ->
 %%--------------------------------------------------------------------
 init([]) ->
     {ok,Sock} = gen_tcp:connect({192,168,1,50},5038,[list]),
-    {ok, #state{state=free,
-		queue=queue:new(),
-		sock=Sock}}.
+    {ok, #state{sock=Sock}}.
 
 %%--------------------------------------------------------------------
+%% @private
 %% Function: %% handle_call(Request, From, State) -> {reply, Reply, State} |
 %%                                      {reply, Reply, State, Timeout} |
 %%                                      {noreply, State} |
@@ -67,21 +67,14 @@ init([]) ->
 %%                                      {stop, Reason, State}
 %% Description: Handling call messages
 %%--------------------------------------------------------------------
-handle_call({api,Request,Pid}, _From, State) when State#state.state==free ->
+handle_call({api,Request}, _From, State) ->
     Aid=State#state.aid,
     Req=add_aid(Request,Aid),
     send(State#state.sock,Req),
-    {reply, Aid, State#state{from=Pid,
-			     state=busy,
-			     aid=Aid+1}};
-handle_call({api,Request,Pid}, _From, State) when State#state.state==busy ->
-    Aid=State#state.aid,
-    Req=add_aid(Request,Aid),
-    {reply, Aid,State#state{queue=queue:in({Pid,Req},
-					   State#state.queue),
-			    aid=Aid+1}}.
+    {reply, Aid, State#state{aid=Aid+1}}.
 
 %%--------------------------------------------------------------------
+%% @private
 %% Function: handle_cast(Msg, State) -> {noreply, State} |
 %%                                      {noreply, State, Timeout} |
 %%                                      {stop, Reason, State}
@@ -91,6 +84,7 @@ handle_cast(_Msg, State) ->
     {noreply, State}.
 
 %%--------------------------------------------------------------------
+%% @private
 %% Function: handle_info(Info, State) -> {noreply, State} |
 %%                                       {noreply, State, Timeout} |
 %%                                       {stop, Reason, State}
@@ -99,15 +93,13 @@ handle_cast(_Msg, State) ->
 handle_info({tcp,_Sock,"Asterisk Call Manager"++_More}, State) ->
     {noreply, State};
 handle_info({tcp,_Sock,Data}, State) ->
-    {Msgs,Rest}=parse(State#state.rest ++ Data),
-    lists:foreach(fun (Msg) ->
-			  io:format("Got ~p~n",[Msg])
-		  end,Msgs),
+    Rest=parse(State#state.rest ++ Data),
     {noreply, State#state{rest=Rest}};
 handle_info(_Info, State) ->
     {noreply, State}.
 
 %%--------------------------------------------------------------------
+%% @private
 %% Function: terminate(Reason, State) -> void()
 %% Description: This function is called by a gen_server when it is about to
 %% terminate. It should be the opposite of Module:init/1 and do any necessary
@@ -118,6 +110,7 @@ terminate(_Reason, _State) ->
     ok.
 
 %%--------------------------------------------------------------------
+%% @private
 %% Func: code_change(OldVsn, State, Extra) -> {ok, NewState}
 %% Description: Convert process state when code is changed
 %%--------------------------------------------------------------------
@@ -127,11 +120,11 @@ code_change(_OldVsn, State, _Extra) ->
 %%--------------------------------------------------------------------
 %%% Internal functions
 %%--------------------------------------------------------------------
+
 add_aid(Request,Aid) ->
     [Request,"ActionId: ",integer_to_list(Aid),"\r\n\r\n"].
 
 send(Sock,Pack) ->
-    io:format("sending ~p~n",[Pack]),
     case gen_tcp:send(Sock,Pack) of
  	ok ->
  	    ok;
@@ -140,15 +133,12 @@ send(Sock,Pack) ->
     end.
 
 parse(Data) ->
-    parse_it(Data,[]).
-
-parse_it(Data,Acc) ->
     case split(Data) of
 	{nothing,Rest} ->
-	    {lists:reverse(Acc),Rest};
+	    Rest;
 	{Msg,More} ->
-	    Msg1=msg_type(Msg),
-	    parse_it(More,[Msg1|Acc])
+	    ast_manager:new_pdu([{"EventTime",erlang:now()}|Msg]),
+	    parse(More)
     end.
 
 split(Data) ->
@@ -170,7 +160,3 @@ split_line(L) ->
     Value=string:substr(L,Pos+2),
     {Lbl,Value}.
     
-msg_type([{"Event",_EventType}|_More]=Msg) ->
-    {event,Msg};
-msg_type([{"Response",_EventType}|_More]=Msg) ->
-    {response,Msg}.
