@@ -14,6 +14,13 @@ LIBS := \
 
 all: $(LIBS)
 
+docs:
+	@for dir in $(LIBS); do \
+	  if [ ! -f $@/SKIP ]; then \
+	    (cd $$dir; $(MAKE) $@) \
+	  fi \
+	done
+
 clean:
 	@for dir in $(LIBS); do \
 	  if [ ! -f $@/SKIP ]; then \

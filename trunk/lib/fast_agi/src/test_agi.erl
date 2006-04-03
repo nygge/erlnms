@@ -1,5 +1,5 @@
+%% @hidden
 -module(test_agi).
-
 -export([test/2]).
 
 test(Req,C) ->

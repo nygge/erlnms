@@ -1,8 +1,10 @@
 %%%-------------------------------------------------------------------
 %%% File    : rrdtool.erl
-%%% Author  : Anders Nygren <anders.nygren@gmail.com>
-%%% Description : Port to rrdtool
-%%%
+%%% @author Anders Nygren <anders.nygren@gmail.com>
+%%% @copyright 2003-2006 Anders Nygren
+%%% @version {@vsn}
+%%% @doc 
+%%% @end
 %%% Created : 26 Aug 2003 by Anders Nygren <anders.nygren@gmail.com>
 %%%-------------------------------------------------------------------
 -module(rrdtool).
@@ -84,37 +86,7 @@ start() ->
 stop() ->
     application:stop(rrdtool).
 
-%% @spec create(FileSpec) -> Result
-%%
-%% FileName    = string
-%% Opts        = [Opt]
-%% Opt         = {start,DateTime} | {step, Duration}
-%% DateTime    = {{YYYY,MM,DD},{HH,MM,SS}}
-%% Duration    = {Unit,Integer}
-%% Unit        = sec | min | hour | day | week | month | year
-%%
-%% DSs         = [DSs]
-%% DS          = {Name,DST,HB,Min,Max}|{Name,'COMPUTE',RPN}
-%% Name        = string | atom
-%% DST         = 'GAUGE' | 'COUNTER' | 'DERIVE' | 'ABSOLUTE'
-%% RPN         = string()
-%% HB          = Duration
-%% Min         = integer()
-%% Max         = integer()
-%%
-%% RRAs        =[RRAs]
-%% RRA         = {'CF',XFF,ConsInt,ArchiveTime} |
-%%               {'HWPREDICT',rows,alpha,beta,seasonal_period,rra_num} |
-%%               {'SEASONAL',seasonal_period,gamma,rra_num} |
-%%               {'DEVSEASONAL',seasonal_period,gamma,rra_num} |
-%%               {'DEVPREDICT',rows,rra_num} |
-%%               {'FAILURES',rows,threshold,window_len,rra_num}
-%% CF          = 'AVERAGE' | 'MIN' | 'MAX' | 'LAST'
-%% XFF         = float()
-%% ConsInt     = {Unit,No}
-%% ArchiveTime = {Unit,No}
-%% Unit        = sec | min | hour | day | week | month | year
-%% No          = integer
+%% @spec create(FileSpec::rrd_lib:rrd_file()) -> Result
 %%
 %% Result = {ok,nothing} | {error,Reason}
 %%
@@ -122,14 +94,12 @@ stop() ->
 %%
 %% <p> For a more detailed description of the parameters see the
 %% RRDTool <a href="http://......">documentation</a>.</p>
-%%
+%% @see rrd_lib:create/2
 
 create(RRDSpec) when is_record(RRDSpec,rrd_file) ->
     gen_server:call(?MODULE,{cmd,create,RRDSpec}).
 
-%% %% @spec dump(File,ToFile) -> Result
-%% %% File    = string()
-%% %% ToFile  = string()
+%% %% @spec dump(File::string(),ToFile::string()) -> Result
 %% %% Result  = WHAT
 %% %% @doc Dump a RRDTool database to an XML-file
 %% %%
@@ -137,12 +107,8 @@ create(RRDSpec) when is_record(RRDSpec,rrd_file) ->
 % dump(File,ToFile) ->
 %     gen_server:call(?MODULE,{dump,File,ToFile}).
 
-%% @spec fetch(File,CF,Res) -> Result
+%% @spec fetch(File::string(),CF::rrd_lib:cf(),Res::rrd_lib:duration()) -> Result
 %%
-%% File       = string()
-%% CF         = 'AVERAGE' | 'MIN' | 'MAX' | 'LAST'
-%% Res        = {Unit, integer()}
-%% Unit       = sec | min | hour | day | week | month | year
 %% Result     = WHAT
 %%
 %% @doc Fetch data from an RRDTool database file
@@ -153,109 +119,30 @@ create(RRDSpec) when is_record(RRDSpec,rrd_file) ->
 fetch(File,CF,Res) ->
     gen_server:call(?MODULE,{cmd,fetch,{File,CF,Res,latest,latest}},infinity).
 
-%% @spec fetch(File,CF,Res,Start,Stop) -> Result
+%% @spec fetch(File::string(),CF::rrd_lib:cf(),Res::rrd_lib:duration(),Start,Stop) -> Result
 %%
-%% File       = string()
-%% CF         = 'AVERAGE' | 'MIN' | 'MAX' | 'LAST'
-%% Res        = {Unit, integer()}
-%% Unit       = sec | min | hour | day | week | month | year
-%% Start      = DateTime | latest
-%% Stop       = DateTime | latest
-%% DateTime   = {{YYYY,MM,DD},{HH,MM,SS}}
+%% Start      = rrd_lib:datetime() | latest
+%% Stop       = rrd_lib:datetime() | latest
 %% Result     = {DSs,[ROW]}
 %% DSs        = [atom()]
-%% ROW        = {datetime(),[Value]}
+%% ROW        = {rrd_lib:datetime(),[Value]}
 %% Value      = float() | unknown
 %%
 %% @doc Fetch data from an RRDTool database file
-%%
+%% @see rrd_lib:fetch/6
 
 fetch(File,CF,Res,Start,Stop) ->
     gen_server:call(?MODULE,{cmd,fetch,{File,CF,Res,Start,Stop}}).
 
-%% @spec graph(File,Pars) -> Result
+%% @spec graph(File::string(),Pars::rrd_lib:rrd_graph()) -> Result
 %%
-%% File  = string()
-%% Pars  = [Flags|Ps]
-%% Flags = [Flag]
-%% Flag  = {start,T} | {'end',T} | {x_grid,P} | {y_grid,P} | alt_y_grid | alt_y_mrtg |
-%%         alt_autoscale | alt_autoscale_max | {units_exponent,V} | {vertical_label,V} |
-%%         {width,W} | {height,H} | interlaced | {imginfo,F} | {imgformat,F} |
-%%         {background,V} | {overlay,V} | {unit,V} | lazy | {upper_limit,V} |
-%%         {lowerlimit,V} | rigid | {base,V} | logarithmic | {color,V} | no_legend |
-%%         {title,T} | {step,V}
-%%
-%% Ps    = [P]
-%% P     = {def,DEFs} | {cdef,CDEFs} | {vdef,VDEFs} | {print,PRINTs} | 
-%%         {comment, COMMENTs} | {hrule,HRULEs} | {vrule,VRULEs} | 
-%%         {line,LINEs} | {area,AREAs} | {stack,STACKs}
-%%
-%% DEFs  = [DEF]
-%% DEF   = {Vname,RRD,DS,CF}
-%% VName = string
-%% RRD   = string
-%% DS    = atom
-%% CF    = 'MAX'|'MIN'|'LAST'|'AVERAGE'
-%%
-%% CDEFs = [CDEF]
-%% CDEF  = {Vname,Expr}
-%% VName = string
-%% Expr  = string
-%%
-%% VDEFs = [VDEF]
-%% VDEF  = {Vname,Expr}
-%%
-%% PRINTs= [PRINT]
-%% PRINT = {VName,CF,Format}
-%% VName = string
-%% CF    = 'MAX'|'MIN'|'LAST'|'AVERAGE'
-%% Format= string
-%%
-%% GPRINTs= [GPRINT]
-%% GPRINT = {VName,CF,Format}
-%% VName  = string
-%% CF     = 'MAX'|'MIN'|'LAST'|'AVERAGE'
-%% Format =  string
-%%
-%% COMMENTs = [COMMENT]
-%% COMMENT  = string
-%%
-%% HRULEs = [HRULE]
-%% HRULE  = {Val,Color} | {Val,Color,Legend}
-%% Val    = number
-%% Color  = number
-%% Legend = string
-%%
-%% VRULEs = [VRULE]
-%% VRULE  = {Val,Color} | {Val,Color,Legend}
-%% Val    = number
-%% Color  = number
-%% Legend = string
-%%
-%% LINEs  = [LINE]
-%% LINE   = {Type,VName} | {Type,VName,Color} | {Type,VName,Color,Legend}
-%% Type   = 1|2|3
-%% Val    = number
-%% Color  = number
-%% Legend = string
-%%
-%% AREAs  = [AREA]
-%% AREA   = VName | {VName,Color} | {VName,Color,Legend}
-%% VName  = string
-%% Color  = number
-%% Legend = string
-%%
-%% STACKs = [STACK]
-%% STACK  = VName | {VName,Color} | {VName,Color,Legend}
-%% VName  = string
-%% Color  = number
-%% Legend = string
 %% Result = {ok, nothing} | {error, Reason}
 %%
 %% @doc Create a graph.
 %%
 %% <p> For a more detailed description of the parameters see the
 %% RRDTool <a href="http://......">documentation</a>.</p>
+%% @see rrd_lib:graph/3
 
 graph(File,Pars) ->
     gen_server:call(?MODULE,{cmd,graph,{File,Pars}}).
@@ -297,7 +184,7 @@ info(File,Timeout) when Timeout==infinity; is_integer(Timeout) ->
 %% <p>When Type=last, returns information about the last time the database was updated.</p>
 %% <p>When Type=dss, returns information about the datasources in the database.</p>
 %% <p>When Type=rra, returns information about the roundrobin archives in the database.</p>
-
+%% @see rrd_lib:info/3
 info(File,Type) when Type==all; Type==last; Type==dss; Type==rra ->
     gen_server:call(?MODULE,{cmd,info,{File,Type}}).
 
@@ -339,7 +226,7 @@ info(File,Type,Timeout) when Type==all; Type==last; Type==dss; Type==rra,
 %% Result   = datetime()
 %%
 %% @doc Get the timestamp for the last update of a database.
-%%
+%% @see rrd_lib:last/2
 
 last(File) ->
     gen_server:call(?MODULE,{cmd,last,{File}}).
@@ -364,6 +251,7 @@ restore(FromFile,ToFile) ->
 %% Result   = WHAT
 %%
 %% @doc Restore the contents of an RRD from an XML dump
+%% @see rrd_lib:restore/4
 
 restore(Opts,FromFile,ToFile) ->
     gen_server:call(?MODULE,{cmd,restore,{Opts,FromFile,ToFile}}).
@@ -433,6 +321,8 @@ update(File,Template,Values) when is_list(File),
 %% Reason    = string()
 %%
 %% @doc Updates an RRD.
+%% @see rrd_lib:update/4
+
 update(File,Template,Values,Timeout) when is_list(File),
 					  is_list(Template), 
 					  is_list(Values),
@@ -440,58 +330,16 @@ update(File,Template,Values,Timeout) when is_list(File),
 					  ->
     gen_server:call(?MODULE,{cmd,update,{File,Template,Values}},Timeout).
 
-%% @spec xport(Pars) -> Result
-%% Pars    = {Flags,DEFs,CDEFs,XPORTs}
-%% Flags   = [Flag]
-%% Flag    = {start,Start}|{'end',End}|{maxrows,MaxRows}|{step,Step}
-%% Start   = datetime()
-%% End     = datetime()
-%% MaxRows = int()
-%% DEFs    = [DEF]
-%% CDEFs   = [CDEF]
-%% XPORTs  = [XPORT]
-%%
-%% DEF     = {Vname,RRD,DS_name,CF}
-%% Vname   = atom()
-%% RRD     = string()
-%% DS_name = atom()
-%% CF      = 'AVERAGE'|'MIN'|'MAX'|'LAST'
-%%
-%% CDEF    = {Vname,RPN}
-%% RPN     = string()
-%%
-%% XPORT   = {Vname,Legend}
-%% Legend  = string()
-%%
+%% @spec xport(Pars::rrd_lib:rrd_export()) -> Result
 %% @doc Get data from RRDTool database.
+%% @see rrd_lib:xport/2
 
 xport(Pars) ->
     gen_server:call(?MODULE,{cmd,xport,Pars}).
 
-%% @spec xport_async(Pars) -> Result
-%% Pars    = {Flags,DEFs,CDEFs,XPORTs}
-%% Flags   = [Flag]
-%% Flag    = {start,Start}|{'end',End}|{maxrows,MaxRows}|{step,Step}
-%% Start   = datetime()
-%% End     = datetime()
-%% MaxRows = int()
-%% DEFs    = [DEF]
-%% CDEFs   = [CDEF]
-%% XPORTs  = [XPORT]
-%%
-%% DEF     = {Vname,RRD,DS_name,CF}
-%% Vname   = atom()
-%% RRD     = string()
-%% DS_name = atom()
-%% CF      = 'AVERAGE'|'MIN'|'MAX'|'LAST'
-%%
-%% CDEF    = {Vname,RPN}
-%% RPN     = string()
-%%
-%% XPORT   = {Vname,Legend}
-%% Legend  = string()
-%%
+%% @spec xport_async(Pars::rrd_lib:rrd_export()) -> Result
 %% @doc Asynchronous get data from RRDTool database.
+%% @see rrd_lib:xport/2
 
 xport_async(Pars) ->
     gen_server:cast(?MODULE,{cmd,xport_async,{self(),Pars}}).
@@ -519,7 +367,8 @@ subscribe(Filter) ->
 %% @private
 init([]) ->
     process_flag(trap_exit, true),
-    {ok,No_workers}=application:get_env(no_rrdtool_workers),
+%%    {ok,No_workers}=application:get_env(no_rrdtool_workers),
+    No_workers=3,
     Workers=start_workers(No_workers),
     Locking=ets:new(locking,[set,protected,{keypos,2}]),
     {ok,#state{locking=Locking,
@@ -613,6 +462,7 @@ terminate(_Reason, _State) ->
 %% Purpose: Convert process state when code is changed
 %% Returns: {ok, NewState}
 %%--------------------------------------------------------------------
+%% @private
 code_change(_OldVsn, State, _Extra) -> {ok, State}.
 
 %%--------------------------------------------------------------------

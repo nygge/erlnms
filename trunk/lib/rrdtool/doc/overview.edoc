@@ -1,0 +1,117 @@
+@author Anders Nygren <anders.nygren@gmail.com>
+@copyright 2003-2006 Anders Nygren
+@version {@vsn}
+@title Welcome to rrdtool
+
+@doc RRDtool binding for Erlang.
+
+<h3><a name="contents">Contents</a></h3>
+<ol>
+  <li><a href="#intro">Introduction</a></li>
+  <ol>
+    <li><a href="#rrd_lib">rrd_lib</a></li>
+    <li><a href="#rrdtool">rrdtool</a></li>
+  </ol>
+  <li><a href="#intro_rrdtool">RRDtool Introduction</a></li>
+</ol>
+
+<h3><a name="intro">Introduction</a></h3>
+
+<h4><a name="intro_rrdtool">rrdtool</a></h4>
+<p>The rrdtool application provides an erlang interface to RRDtool.
+RRDtool is used for storing measurement data and generate graphs, 
+see <a href="#intro_rrdtool">RRDtool introduction</a> for more details.</p>
+
+The rrdtool application consists of two layers
+<ul>
+  <li>rrd_lib</li>
+  <li>rrdtool</li>
+</ul>
+
+<h3><a name="rrd_lib">rrd_lib</a></h3>
+
+rrd_lib is a functional library that handles the communication with a rrdtool server process.
+
+<h3><a name="rrdtool">rrdtool</a></h3>
+rrdtool provides a server that handles
+<ul>
+  <li>multiple RRDtool server processes</li>
+  <li>file locking</li>
+</ul>
+
+<h3><a name="intro_rrdtool">RRDtool Introduction</a></h3>
+This description is copied from the RRDtool man page.
+
+<h4><a name="rrdtool_how">How does rrdtool work</a></h4>
+
+<h5><a name="rrdtool_how_da">Data acquisition</a></h5>
+
+<p>When monitoring the state of a system, it is convenient to have the
+data available at a constant time interval. Unfortunately, you may not
+always be able to fetch data at exactly the time you want
+to. Therefore RRDtool lets you update the logfile at any time you
+want. It will automatically interpolate the value of the data-source
+(DS) at the latest official time-slot (intervall) and write this
+interpolated value to the log. The original value you have supplied is
+stored as well and is also taken into account when interpolating the
+next log entry.</p>
+
+<h5><a name="rrdtool_how_con">Consolidation</a></h5>
+
+<p>You may log data at a 1 minute interval, but you might also be
+interested to know the development of the data over the last year. You
+could do this by simply storing the data in 1 minute intervals for the
+whole year. While this would take considerable disk space it would
+also take a lot of time to analyze the data when you wanted to create
+a graph covering the whole year. RRDtool offers a solution to this
+problem through its data consolidation feature. When setting up an
+Round Robin Database (RRD), you can define at which interval this
+consolidation should occur, and what consolidation function (CF)
+(average, minimum, maximum, total, last) should be used to build the
+consolidated values (see rrdcreate). You can define any number of
+different consolidation setups within one RRD. They will all be
+maintained on the fly when new data is loaded into the RRD.</p>
+
+<h5><a name="rrdtool_how_rra">Round Robin Archives</a></h5>
+
+<p>Data values of the same consolidation setup are stored into Round
+Robin Archives (RRA). This is a very efficient manner to store data
+for a certain amount of time, while using a known and constant amount
+of storage space.</p>
+
+<p>It works like this: If you want to store 1'000 values in 5 minute
+interval, RRDtoolR will allocate space for 1'000 data values and a
+header area. In the header it will store a pointer telling which slots
+(value) in the storage area was last written to. New values are
+written to the Round Robin Archive in, you guessed it, a round robin
+manner. This automatically limits the history to the last 1'000 values
+(in our example). Because you can define several RRAs within a
+single RRD, you can setup another one, for storing 750 data values
+at a 2 hour interval, for example, and thus keep a log for the last
+two months at a lower resolution.</p>
+
+<p>The use of RRAs guarantees that the RRDs does not grow over
+time and that old data is automatically eliminated. By using the
+consolidation feature, you can still keep data for a very long time,
+while gradually reducing the resolution of the data along the time
+axis.</p>
+
+<p>Using different consolidation functions (CF) allows you to store
+exactly the type of information that actually interests you: 
+the maximum one minute traffic on the LAN, the minimum temperature
+ of your wine cellar, the total minutes of down time, etc.</p>
+
+<h5><a name="rrdtool_how_unkn">Unknown Data</a></h5>
+
+<p>As mentioned earlier, the RRDs stores data at a constant
+interval. Sometimes it may happen that no new data is available when a
+value has to be written to the RRDs. Data acquisition may not be
+possible for one reason or other. With RRDtool you can handle these
+situations by storing an *UNKNOWN* value into the database. The
+value '*UNKNOWN*' is supported through all the functions of the
+tool. When consolidating a data set, the amount of *UNKNOWN* data
+values is accounted for and when a new consolidated value is ready to
+be written to its Round Robin Archive (RRAs), a validity check is
+performed to make sure that the percentage of unknown values in the
+data point is above a configurable level. If not, an *UNKNOWN* value
+will be written to the RRAs.</p>

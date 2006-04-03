@@ -1,9 +1,11 @@
 %%%-------------------------------------------------------------------
 %%% File    : alarm_sts.erl
-%%% Author  : Anders Nygren <anders.nygren@gmail.com>
-%%% Description : 
-%%%
 %%% Created : 12 Aug 2003 by Anders Nygren <anders.nygren@gmail.com>
+%%% @copyright 2003-2006 Anders Nygren
+%%% @version {@vsn}
+%%% @author Anders Nygren <anders.nygren@gmail.com>
+%%% @doc Maintain the current alarm status.
+%%% @end
 %%%-------------------------------------------------------------------
 -module(alarm_sts).
 
@@ -385,7 +387,8 @@ al_comment(Id,Comment,Who,AList) ->
     [Row]=ets:lookup(AList,Id),
     % Add sending comment to alarm log
     Cs=Row#as_alarm.comments,
-    ets:insert(AList,Row#as_alarm{comments=[{Who,calendar:local_time(),Comment}
+    ets:insert(AList,Row#as_alarm{comments=[{Who,calendar:local_time(),
+					     Comment}
 					    |Cs]}).
     
 

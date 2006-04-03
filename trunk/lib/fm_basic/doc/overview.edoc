@@ -1,0 +1,86 @@
+@author Anders Nygren <anders.nygren@gmail.com>
+@copyright 2004-2006 Anders Nygren
+@version {@vsn}
+@title Fault Management Core functions
+@doc Fault Management Core functions
+
+== Contents ==
+<ol>
+  <li>{@section Introduction}</li>
+    <ol>
+      <li>{@section Alarm Reception}</li>
+      <li>{@section Alarm Log}</li>
+      <li>{@section Alarm Presentation Clients}</li>
+      <li>{@section Alarm Status}</li>
+      <li>{@section Preprocessing}</li>
+    </ol>
+  <li>{@section Alarm Client Functions}</li>
+  <li>{@section Alarm Preprocessing}</li>
+    <ol>
+      <li>{@section Automatic Action}</li>
+      <li>{@section Hold}</li>
+    </ol>
+  <li>{@section Alarm Format}</li>
+</ol>
+
+== Introduction ==
+=== Alarm Reception ===
+FM_Basic does not include reception of alarm or events from any network 
+equipment. Instead this task is handled by Alarm Reception applications
+that handle different protocols and formats.
+
+These Alarm Reception applications convert the received alarms into an
+internal format that is used throughout the Fault Management applications.
+
+=== Alarm Log ===
+Alarm logging is included in the core functions but the actual storage 
+of alarms in a log is handled by separate Alarm Log applications.
+
+This is so that it is easy to use different database backends for logging.
+
+Currently there exists a backend using MySQL.
+
+=== Alarm Presentation Clients ===
+Alarm Presentation Clients are not included in the core functions, instead
+they are provided by separate Client applications.
+
+=== Alarm Status ===
+??? WHAT DO I PUT HERE ???
+
+=== Preprocessing ===
+In order to decrease the load on the operators there is a simple support 
+for alarm preprocessing in order to try to handle some actions 
+automatically.
+
+== Alarm Client Functions ==
+The Alarm status and logging interfaces support the folowing functions.
+<ul>
+  <li>subscribe to alarms</li>
+  <li>acknowledge alarm</li>
+  <li>clear alarm</li>
+  <li>add comment to alarm</li>
+</ul>
+
+When the status of an alarm changes, or when a comment is added, all 
+clients that subscribe to the alarm status for that network element are immediately informed of the change.
+
+== Alarm Preprocessing ==
+
+=== Automatic Action ===
+For alarms that has a simple action that always should be taken when
+the alarm is raised it is possible to automatically run a script, or
+call an Erlang function, that takes the corrective action.
+
+=== Hold ===
+The hold preprocessing function delays the delivery of an alarm for a 
+specified period to see if the alarm is cleared.
+
+== Alarm Format ==
+The alarm record format used is a mix of the Distributed Management Task 
+Force's, (DMTF), CIM_AlertIndication, and ITU's X.733. DMTF based their 
+specification on X.733, but some things were removed or not clearly 
+specified and in these cases X.733 is used instead.
+
+So currently the contents and the functions are more like X.733 but some 
+of the naming conventions are according to DMTF. In the future it is 
+likely that a change will be made to pure X.733.

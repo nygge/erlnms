@@ -1,9 +1,11 @@
 %%%-------------------------------------------------------------------
 %%% File    : threshold.erl
-%%% Author  : Anders Nygren <anders.nygren@gmail.com>
-%%% Description : 
-%%%
 %%% Created :  6 Feb 2004 by Anders Nygren <anders.nygren@gmail.com>
+%%% @copyright 2004-2006 Anders Nygren
+%%% @version {@vsn}
+%%% @author Anders Nygren <anders.nygren@gmail.com>
+%%% @doc Threshold server.
+%%% @end
 %%%-------------------------------------------------------------------
 -module(threshold).
 
@@ -50,6 +52,7 @@ start_link() ->
 %%          {ok, State, Timeout} |
 %%          ignore               |
 %%          {stop, Reason}
+%% @private
 %%--------------------------------------------------------------------
 init([]) ->
     ok=connect(),
@@ -64,6 +67,7 @@ init([]) ->
 %%          {noreply, State, Timeout}      |
 %%          {stop, Reason, Reply, State}   | (terminate/2 is called)
 %%          {stop, Reason, State}            (terminate/2 is called)
+%% @private
 %%--------------------------------------------------------------------
 handle_call(Request, From, State) ->
     Reply = ok,
@@ -75,6 +79,7 @@ handle_call(Request, From, State) ->
 %% Returns: {noreply, State}          |
 %%          {noreply, State, Timeout} |
 %%          {stop, Reason, State}            (terminate/2 is called)
+%% @private
 %%--------------------------------------------------------------------
 handle_cast(Msg, State) ->
     {noreply, State}.
@@ -85,6 +90,7 @@ handle_cast(Msg, State) ->
 %% Returns: {noreply, State}          |
 %%          {noreply, State, Timeout} |
 %%          {stop, Reason, State}            (terminate/2 is called)
+%% @private
 %%--------------------------------------------------------------------
 
 handle_info(Data, State) when is_record(Data,new_pm_data) ->
@@ -98,6 +104,7 @@ handle_info(Info, State) ->
 %% Function: terminate/2
 %% Description: Shutdown the server
 %% Returns: any (ignored by gen_server)
+%% @private
 %%--------------------------------------------------------------------
 terminate(Reason, State) ->
     ok.
@@ -106,6 +113,7 @@ terminate(Reason, State) ->
 %% Func: code_change/3
 %% Purpose: Convert process state when code is changed
 %% Returns: {ok, NewState}
+%% @private
 %%--------------------------------------------------------------------
 code_change(OldVsn, State, Extra) ->
     {ok, State}.

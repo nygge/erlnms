@@ -1,7 +1,10 @@
 %%%-------------------------------------------------------------------
 %%% File    : rrdtool.hrl
-%%% Author  : Anders Nygren <anders.nygren@gmail.com>
-%%% Description : 
+%%% @author Anders Nygren <anders.nygren@gmail.com>
+%%% @copyright 2004-2006 Anders Nygren
+%%% @version {@vsn}
+%%% @doc RRDTool interface library.
+%%% @end
 %%%
 %%% Created :  5 Feb 2004 by Anders Nygren <anders.nygren@gmail.com>
 %%%-------------------------------------------------------------------

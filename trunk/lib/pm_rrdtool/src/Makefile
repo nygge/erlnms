@@ -6,7 +6,6 @@ include ../../../support/include.mk
 
 ERLC_FLAGS += -I ../../pm_basic/include -I ../../rrdtool/include
 
-#all: $(ERL_OBJECTS) $(ERL_DOCUMENTS) ../ebin/pm_rrdtool.app
 all: $(ERL_OBJECTS) ../ebin/pm_rrdtool.app
 
 clean:

@@ -1,7 +1,11 @@
 %%%-------------------------------------------------------------------
 %%% File    : sup_rrdtool.erl
-%%% Author  : Anders Nygren <anders.nygren@gmail.com>
-%%% Description : 
+%%% @author Anders Nygren <anders.nygren@gmail.com>
+%%% @copyright 2004-2006 Anders Nygren
+%%% @version {@vsn}
+%%% @doc 
+%%% @end
+%%% @private
 %%%
 %%% Created :  3 Feb 2004 by Anders Nygren <anders.nygren@gmail.com>
 %%%-------------------------------------------------------------------

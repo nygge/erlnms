@@ -1,11 +1,8 @@
 %%%-------------------------------------------------------------------
 %%% File    : rrd_lib.erl
-%%% Author  : Anders Nygren <anders.nygren@gmail.com>
-%%% Description : Port to rrdtool
-%%%
-%%% Created : 26 Aug 2003 by Anders Nygren <anders.nygren@gmail.com>
-%%%-------------------------------------------------------------------
-
+%%% @author Anders Nygren <anders.nygren@gmail.com>
+%%% @copyright 2003-2006 Anders Nygren
+%%% @version {@vsn}
 %%% @doc RRDTool interface library.
 %%%
 %%% <p>This is an Erlang library that provides an interface to RRDTool,
@@ -13,10 +10,212 @@
 %%% <p>For details on how to use RRDTool see the 
 %%% <a href="http://somelink.com.ch">RRDTool documentation</a></p>
 %%%
-%%% @copyright 2005 Anders Nygren
-%%% @author Anders Nygren <anders.nygren@gmail.com>
-%%% @version 0.8, {10 Apr 2005}
 %%% @end
+%%% @type cf() = 'AVERAGE' | 'MIN' | 'MAX' | 'LAST'. 
+%%% Consolidation function, defines how datapoints are consolidated into a new datapoint with a longer time interval.
+%%%
+%%% @type ds_type() = 'GAUGE' | 'COUNTER' | 'DERIVE' | 'ABSOLUTE'.
+%%% Type of data source.
+%%%
+%%% %@type duration() = {unit(),integer()}. 
+%%% %Denotes a time interval.
+%%%
+%%% @type heartbeat() = //utils/time:duration().
+%%% Max number of seconds between two updates.
+%%%
+%%% options() = [option()].
+%%% option()  = {start,T} | {'end',T} | {x_grid,P} | {y_grid,P} | 
+%%%             alt_y_grid | alt_y_mrtg | alt_autoscale | 
+%%%             alt_autoscale_max | {units_exponent,V} | 
+%%%             {vertical_label,V} | {width,W} | {height,H} | 
+%%%             interlaced | {imginfo,F} | {imgformat,F} | {background,V} | 
+%%%             {overlay,V} | {unit,V} | lazy | {upper_limit,V} |
+%%%             {lowerlimit,V} | rigid | {base,V} | logarithmic | {color,V} | 
+%%%             no_legend | {title,T} | {step,V}.
+%%%
+%%% @type rrd_ds_type() = rrd_ds()|rrd_ds_comp().
+%%% Datasource type.
+%%%
+%%% @type rrd_ds() = Record.
+%%% <pre>
+%%% -record(rrd_ds,{name::string(),
+%%%                 type::ds_type(),
+%%%                 hb::heartbeat(),
+%%%                 min::number(),
+%%%                 max::number()}).
+%%% </pre>
+%%% A normal datasource.
+%%%
+%%% @type rrd_ds_comp() = Record.
+%%% <pre>
+%%% -record(rrd_ds_comp,{name::string(),
+%%%                      rpn::string()}).
+%%% </pre>
+%%% A computed datasource.
+%%%
+%%% @type rrd_export() = Record.
+%%% <pre>
+%%% -record(rrd_export,{start:://utils/time:datetime(),
+%%%                     stop:://utils/time:datetime(),
+%%%                     rows::integer,
+%%%                     step:://utils/time:duration(),
+%%%                     defs::[rrd_def()],
+%%%                     cdefs::[rrd_cdef()],
+%%%                     exports::[rrd_xport()]}).
+%%% </pre>
+%%% 
+%%% @type rrd_file()=Record.
+%%% <pre>
+%%% -record(rrd_file,{file::string(),
+%%%                   start:://utils/time:duration(),
+%%%                   step:://utils/time:duration(),
+%%%                   dss::[rrd_ds_type()],
+%%%                   rras[rrd_rra_type()]}).
+%%% </pre>
+%%% Defines a rrdfile.
+%%%
+%%% @type rrd_graph() = Record.
+%%% <pre>
+%%% -record(rrd_graph,{file::string(),
+%%%                    start:://utils/time:datetime(),
+%%%                    stop:://utils/time:datetime(),
+%%%                    step:://utils/time:duration(),
+%%%                    defs::[rrd_def()],
+%%%                    cdefs::[rrd_cdef()],
+%%%                    vdefs::[rrd_vdef()],
+%%%                    graph::[graph_opt()],
+%%%                    options::[option()]}).
+%%% </pre>
+%%%
+%%% @type graph_opt() = rrd_print()|rrd_gprint()|rrd_comment()|rrd_vrule()|rrd_line()|rrd_area()|rrd_tick()|rrd_shift()
+%%% @type rrd_print() = Record.
+%%% <pre>
+%%% -record(rrd_print,{vname::string(),format::string()}).
+%%% </pre>
+%%% 
+%%% @type rrd_gprint()  = Record.
+%%% <pre>
+%%% -record(rrd_gprint,{vname::string(),format::format()}).
+%%% </pre>
+%%% 
+%%% @type rrd_comment()  = Record.
+%%% <pre>
+%%% -record(rrd_comment,{text::string()}).
+%%% </pre>
+%%% 
+%%% @type rrd_vrule() = Record.
+%%% <pre>
+%%% -record(rrd_vrule,{time,color,legend}).
+%%% </pre>
+%%% 
+%%% @type rrd_line() = Record.
+%%% <pre>
+%%% -record(rrd_line,{width,vname,color,legend,stack}).
+%%% </pre>
+%%% 
+%%% @type rrd_area()  = Record.
+%%% <pre>
+%%% -record(rrd_area,{vname,color,legend,stack}).
+%%% </pre>
+%%% 
+%%% @type rrd_tick()  = Record.
+%%% <pre>
+%%% -record(rrd_tick,{vname,rrggbb,aa,fraction,legend}).
+%%% </pre>
+%%% @type rrd_shift()  = Record.
+%%% <pre>
+%%% -record(rrd_shift,{vname,offset}).
+%%% </pre>
+
+%%% @type rrd_rra_type() = rrd_rra()|rrd_rra_hwpred()|rrd_rra_seasonal()|rrd_rra_devseason()|rrd_rra_devpredict()|rrd_rra_failures().
+%%% RRA type.
+%%%
+%%% @type rrd_rra() = Record.
+%%% <pre>
+%%% -record(rrd_rra,{id::string(),
+%%%                  cf::cf(),
+%%%                  xff::xff(),
+%%%                  interval::interval(),
+%%%                  duration:://utils/time:duration()}).
+%%% </pre>
+%%% Normal RRA.
+%%%
+%%% @type rrd_rra_hwpred() = Record.
+%%% <pre>
+%%% -record(rrd_rra_hwpred,{id::string(),
+%%%                         rows::integer(),
+%%%                         alpha::number(),
+%%%                         beta::number(),
+%%%                         period:://utils/time:duration(),
+%%%                         rra_num::integer()}).
+%%% </pre>
+%%%
+%%% @type rrd_rra_seasonal() = Record.
+%%% <pre>
+%%% -record(rrd_rra_seasonal,{id::string(),
+%%%                           period::number(),
+%%%                           gamma::number(),
+%%%                           rra_num::integer()}).
+%%% </pre>
+%%%
+%%% @type rrd_rra_devseason() = Record.
+%%% <pre>
+%%% -record(rrd_rra_devseason,{id::string(),
+%%%                            period::number(),
+%%%                            gamma::number(),
+%%%                            rra_num::integer()}).
+%%% </pre>
+%%%
+%%% @type rrd_rra_devpredict() = Record.
+%%% <pre>
+%%% -record(rrd_rra_devpredict,{id::string(),
+%%%                             rows::integer(),
+%%%                             rra_num::integer()}).
+%%% </pre>
+%%%
+%%% @type rrd_rra_failures() = Record.
+%%% <pre>
+%%% -record(rrd_rra_failures,{id::string(),
+%%%                           rows::integer(),
+%%%                           threshold::number(),
+%%%                           window::number(),
+%%%                           rra_num::integer()}).
+%%% </pre>
+%%%
+%%% @type rrd_def() = Record.
+%%% <pre>
+%%% -record(rrd_def,{vname::string(),      % Variable name
+%%%  		     rrd::string(),        % RRD filename
+%%%		     ds_name::string(),    % Datasource name
+%%%		     cf::cf()              % Consolidation functions
+%%%	    }).
+%%% </pre>
+%%%
+%%% @type rrd_cdef() = Record.
+%%% <pre>
+%%% -record(rrd_cdef,{vname::string(),     % Variable name
+%%%		      rpn::string()        % RPN expression
+%%%	   }).
+%%% </pre>
+%%%
+%%% @type rrd_vdef() = Record.
+%%% <pre>
+%%% -record(rrd_vdef,{vname::string(),     % Variable name
+%%%		      rpn::string()        % RPN expression
+%%%		 }).
+%%% </pre>
+%%%
+%%% @type rrd_xport() = Record.
+%%% <pre>
+%%% -record(rrd_xport,{vname::string(),    % Variable name
+%%%		       legend::string()    % Exported name
+%%%		  }).
+%%% </pre>
+%%%
+%%% @type unit() = sec|min|hour|day|week|month|year.
+%%% @end
+%%% Created : 26 Aug 2003 by Anders Nygren <anders.nygren@gmail.com>
+%%%-------------------------------------------------------------------
 
 -module(rrd_lib).
 
@@ -50,7 +249,7 @@
 %%
 %%
 open() ->
-    Cmd="/usr/bin/rrdtool -",
+    Cmd="/usr/pkg/bin/rrdtool -",
 %%    Cmd="/usr/bin/rrdtool -",
     case catch open_port({spawn,Cmd},[stream]) of
 	Port when is_port(Port) ->
@@ -61,7 +260,7 @@ open() ->
 	    {error,PosixCode}
     end.
 
-%% @spec close(Port) -> true
+%% @spec close(Port::port()) -> true
 %%
 %% @doc Close a port to an instance of RRDTool.
 %%
@@ -70,8 +269,7 @@ open() ->
 close(Port) when is_port(Port) ->
     port_close(Port).
 
-%% @spec create(Port,RRDSpec) -> Result
-%%
+%% @spec create(Port::port(),RRDSpec::rrd_file()) -> Result
 %%
 %% Result = {ok,nothing} | {error,Reason}
 %%
@@ -81,10 +279,10 @@ close(Port) when is_port(Port) ->
 %% RRDTool <a href="http://......">documentation</a>.</p>
 %%
 
-create(Port,RRDSpec) when is_port(Port) ->
+create(Port,RRDSpec) when is_port(Port),is_record(RRDSpec,rrd_file) ->
     rrd_create:do_create(Port,RRDSpec).
 
-%% %% @spec dump(Port,File,ToFile) -> Result
+%% %% @spec dump(Port::port(),File::string(),ToFile::string()) -> Result
 %% %% Port    = port()
 %% %% File    = string()
 %% %% ToFile  = string()
@@ -92,16 +290,12 @@ create(Port,RRDSpec) when is_port(Port) ->
 %% %% @doc Dump a RRDTool database to an XML-file
 %% %%
 
-%% dump(Port,File,ToFile) ->
+%% dump(Port,File,ToFile) when is_port(Port) ->
 %%     rrd_dump:dump(Port,File,ToFile}).
 
-%% @spec fetch(Port,File,CF,Res) -> Result
+%% @spec fetch(Port::port(),File::string(),CF::cf(),Res:://utils/time:duration()) -> Result
 %%
-%% Port       = port()
 %% File       = string()
-%% CF         = 'AVERAGE' | 'MIN' | 'MAX' | 'LAST'
-%% Res        = {Unit, integer()}
-%% Unit       = sec | min | hour | day | week | month | year
 %% Result     = WHAT
 %%
 %% @doc Fetch data from an RRDTool database file
@@ -112,16 +306,10 @@ create(Port,RRDSpec) when is_port(Port) ->
 fetch(Port,File,CF,Res) when is_port(Port) ->
     rrd_fetch:do_fetch(Port,File,CF,Res,latest,latest).
 
-%% @spec fetch(Port,File,CF,Res,Start,Stop) -> Result
+%% @spec fetch(Port::port(),File::string(),CF::cf(),Res:://utils/time:duration(),Start,Stop) -> Result
 %%
-%% Port       = port()
-%% File       = string()
-%% CF         = 'AVERAGE' | 'MIN' | 'MAX' | 'LAST'
-%% Res        = {Unit, integer()}
-%% Unit       = sec | min | hour | day | week | month | year
-%% Start      = DateTime | latest
-%% Stop       = DateTime | latest
-%% DateTime   = {{YYYY,MM,DD},{HH,MM,SS}}
+%% Start      = //utils/time:datetime() | latest
+%% Stop       = //utils/time:datetime() | latest
 %% Result     = WHAT
 %%
 %% @doc Fetch data from an RRDTool database file
@@ -130,85 +318,7 @@ fetch(Port,File,CF,Res) when is_port(Port) ->
 fetch(Port,File,CF,Res,Start,Stop) when is_port(Port) ->
     rrd_fetch:do_fetch(Port,File,CF,Res,Start,Stop).
 
-%% @spec graph(Port,Pars) -> Result
-%%
-%% File  = string()
-%% Pars  = [Flags|Ps]
-%% Flags = [Flag]
-%% Flag  = {start,T} | {'end',T} | {x_grid,P} | {y_grid,P} | alt_y_grid | 
-%%         alt_y_mrtg | alt_autoscale | alt_autoscale_max | 
-%%         {units_exponent,V} | {vertical_label,V} | {width,W} | 
-%%         {height,H} | interlaced | {imginfo,F} | {imgformat,F} |
-%%         {background,V} | {overlay,V} | {unit,V} | lazy | {upper_limit,V} |
-%%         {lowerlimit,V} | rigid | {base,V} | logarithmic | {color,V} | 
-%%         no_legend | {title,T} | {step,V}
-%%
-%% Ps    = [P]
-%% P     = {def,DEFs} | {cdef,CDEFs} | {print,PRINTs} | {comment, COMMENTs} | 
-%%         {hrule,HRULEs} | {vrule,VRULEs} | {line,LINEs} | {area,AREAs} | 
-%%         {stack,STACKs}
-%%
-%% DEFs  = [DEF]
-%% DEF   = {Vname,RRD,DS,CF}
-%% VName = string
-%% RRD   = string
-%% DS    = atom
-%% CF    = 'MAX'|'MIN'|'LAST'|'AVERAGE'
-%%
-%% CDEFs = [CDEF]
-%% CDEF  = {Vname,Expr}
-%%
-%% VDEFs = [VDEF]
-%% VDEF  = {Vname,Expr}
-%%
-%% VName = string
-%% Expr  = string
-%%
-%% PRINTs= [PRINT]
-%% PRINT = {VName,CF,Format}
-%% VName = string
-%% CF    = 'MAX'|'MIN'|'LAST'|'AVERAGE'
-%% Format= string
-%%
-%% GPRINTs= [GPRINT]
-%% GPRINT = {VName,CF,Format}
-%% VName  = string
-%% CF     = 'MAX'|'MIN'|'LAST'|'AVERAGE'
-%% Format =  string
-%%
-%% COMMENTs = [COMMENT]
-%% COMMENT  = string
-%%
-%% HRULEs = [HRULE]
-%% HRULE  = {Val,Color} | {Val,Color,Legend}
-%% Val    = number
-%% Color  = number
-%% Legend = string
-%%
-%% VRULEs = [VRULE]
-%% VRULE  = {Val,Color} | {Val,Color,Legend}
-%% Val    = number
-%% Color  = number
-%% Legend = string
-%%
-%% LINEs  = [LINE]
-%% LINE   = {Type,VName} | {Type,VName,Color} | {Type,VName,Color,Legend}
-%% Type   = 1|2|3
-%% Val    = number
-%% Color  = number
-%% Legend = string
-%%
-%% AREAs  = [AREA]
-%% AREA   = VName | {VName,Color} | {VName,Color,Legend}
-%% VName  = string
-%% Color  = number
-%% Legend = string
-%%
-%% STACKs = [STACK]
-%% STACK  = VName | {VName,Color} | {VName,Color,Legend}
-%% VName  = string
-%% Color  = number
-%% Legend = string
+%% @spec graph(Port::port(),Pars::rrd_graph()) -> Result
 %% Result = {ok, nothing} | {error, Reason}
 %%
 %% @doc Create a graph.
@@ -219,9 +329,7 @@ fetch(Port,File,CF,Res,Start,Stop) when is_port(Port) ->
 graph(Port,Pars) when is_port(Port) ->
     rrd_graph:do_graph(Port,Pars).
 
-%% @spec info(Port,File) -> Result
-%% Port      = port()
-%% File      = string()
+%% @spec info(Port::port(),File::string()) -> Result
 %% Result    = WHAT
 %%
 %% @doc Get information about a RRDTool database
@@ -231,9 +339,7 @@ graph(Port,Pars) when is_port(Port) ->
 info(Port,File) when is_port(Port) ->
     rrd_info:do_info(Port,File,all).
 
-%% @spec info(Port,File,Type) -> Result
-%% Port      = port()
-%% File      = string()
+%% @spec info(Port::port(),File::string(),Type) -> Result
 %% Type      = all | last | dss | rras
 %% Result    = WHAT
 %%
@@ -247,9 +353,7 @@ info(Port,File) when is_port(Port) ->
 info(Port,File,Type) when is_port(Port), Type==all; Type==last; Type==dss; Type==rras ->
     rrd_info:do_info(Port,File,Type).
 
-%% @spec last(Port,File) -> Result
-%% Port     = port()
-%% File     = string()
+%% @spec last(Port::port(),File::string()) -> Result
 %% Result   = WHAT
 %%
 %% @doc Get the timestamp for the last update of a database.
@@ -258,10 +362,7 @@ info(Port,File,Type) when is_port(Port), Type==all; Type==last; Type==dss; Type=
 last(Port,File) when is_port(Port) ->
     rrd_last:do_last(Port,File).
 
-%% @spec restore(Port,FromFile,ToFile) -> Result
-%% Port     = port()
-%% FromFile = string()
-%% ToFile   = string()
+%% @spec restore(Port::port(),FromFile::string(),ToFile::string()) -> Result
 %% Result   = WHAT
 %%
 %% @doc Restore the contents of an RRD from an XML dump
@@ -271,12 +372,9 @@ last(Port,File) when is_port(Port) ->
 restore(Port,FromFile,ToFile) when is_port(Port) ->
     restore(Port,[],FromFile,ToFile).
 
-%% @spec restore(Port,Opts,FromFile,ToFile) -> Result
-%% Port     = port()
+%% @spec restore(Port::port(),Opts,FromFile::string(),ToFile::string()) -> Result
 %% Opts     = [Opt]
 %% Opt      = range_check
-%% FromFile = string()
-%% ToFile   = string()
 %% Result   = WHAT
 %%
 %% @doc Restore the contents of an RRD from an XML dump
@@ -285,12 +383,8 @@ restore(Port,FromFile,ToFile) when is_port(Port) ->
 restore(Port,Opts,FromFile,ToFile) when is_port(Port) ->
     rrd_restore:do_restore(Port,Opts,FromFile,ToFile).
 
-%% %% @spec resize(Port,File,RRA,OP,Rows) -> Result
-%% %% Port     = port()
-%% %% File     = string()
-%% %% RRA      = integer()
+%% %% @spec resize(Port::port(),File::string(),RRA::integer(),OP,Rows::integer()) -> Result
 %% %% OP       = grow | shrink
-%% %% Rows     = integer()
 %% %%
 %% %% @doc Add or delete rows in an RRDTool database.
 %% %%
@@ -301,11 +395,9 @@ restore(Port,Opts,FromFile,ToFile) when is_port(Port) ->
 %% tune(Port,File,Pars) ->
 %%     rrd_tune:do_tune(File,Pars}).
 
-%% @spec update(Port,File,Values) -> Result
-%% Port     = port()
-%% File     = string()
+%% @spec update(Port::port(),File::string(),Values) -> Result
 %% ValueSets = [ValueSet]
-%% ValueSet  = {n,[Value]} | {TS,[Value]}
+%% ValueSet  = {n,[Value::number()]} | {TS:://utils/time:datetime(),[Value::number()]}
 
 %% Result   = ok | {error, Reason}
 %% Reason = string()
@@ -317,15 +409,11 @@ restore(Port,Opts,FromFile,ToFile) when is_port(Port) ->
 update(Port,File,Values) when is_port(Port), is_list(Values) ->
     update(Port,File,[],Values).
 
-%% @spec update(Port,File,Template,ValueSets) -> Result
-%% Port      = port()
-%% File      = string()
+%% @spec update(Port::port(),File::string(),Template,ValueSets) -> Result
 %% Template  = [atom()]
 %% ValueSets = [ValueSet]
 %% ValueSet  = {n,[Value]} | {TS,[Value]}
-%% Result    = {ok,TSs} | {error, Reason}
-%% TSs       = [TS]
-%% TS        = integer()
+%% Result    = {ok,[TS:://utils/time:datetime()]} | {error, Reason}
 %% Reason    = string()
 %%
 %% @doc Updates an RRD.
@@ -338,29 +426,7 @@ update(Port,File,Template,Values) when is_port(Port),
 				       is_list(Values) ->
     rrd_update:do_update(Port,File,Template,Values).
 
-%% @spec xport(Port,Pars) -> Result
-%% Port    = port()
-%% Pars    = {Flags,DEFs,CDEFs,XPORTs}
-%% Flags   = [Flag]
-%% Flag    = {start,Start}|{'end',End}|{maxrows,MaxRows}|{step,Step}
-%% Start   = datetime()
-%% End     = datetime()
-%% MaxRows = int()
-%% DEFs    = [DEF]
-%% CDEFs   = [CDEF]
-%% XPORTs  = [XPORT]
-%%
-%% DEF     = {Vname,RRD,DS_name,CF}
-%% Vname   = atom()
-%% RRD     = string()
-%% DS_name = atom()
-%% CF      = 'AVERAGE'|'MIN'|'MAX'|'LAST'
-%%
-%% CDEF    = {Vname,RPN}
-%% RPN     = string()
-%%
-%% XPORT   = {Vname,Legend}
-%% Legend  = string()
+%% @spec xport(Port::port(),Pars::rrd_export()) -> Result
 %%
 %% @doc Get data from RRDTool database.
 

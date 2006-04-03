@@ -1,9 +1,11 @@
 %%%-------------------------------------------------------------------
 %%% File    : pm_config.erl
-%%% Author  : Anders Nygren <anders.nygren@gmail.com>
-%%% Description : 
-%%%
 %%% Created : 25 May 2004 by Anders Nygren <anders.nygren@gmail.com>
+%%% @copyright 2004-2006 Anders Nygren
+%%% @version {@vsn}
+%%% @author Anders Nygren <anders.nygren@gmail.com>
+%%% @doc Configuration data for pm_rrdtool.
+%%% @end
 %%%-------------------------------------------------------------------
 -module(pm_rrd_config).
 

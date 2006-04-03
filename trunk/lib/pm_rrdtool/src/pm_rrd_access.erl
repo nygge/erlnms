@@ -1,9 +1,11 @@
 %%%-------------------------------------------------------------------
 %%% File    : pm_rrd_access.erl
-%%% Author  : Anders Nygren <anders.nygren@gmail.com>
-%%% Description : 
-%%%
 %%% Created :  5 Jun 2004 by Anders Nygren <anders.nygren@gmail.com>
+%%% @copyright 2004-2006 Anders Nygren
+%%% @version {@vsn}
+%%% @author Anders Nygren <anders.nygren@gmail.com>
+%%% @doc PM database backend based on RRDtool.
+%%% @end
 %%%-------------------------------------------------------------------
 -module(pm_rrd_access).
 

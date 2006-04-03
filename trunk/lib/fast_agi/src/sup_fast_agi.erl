@@ -1,9 +1,12 @@
 %%%-------------------------------------------------------------------
 %%% File    : sup_fast_agi.erl
-%%% Author  : anders <anders@>
-%%% Description : 
+%%% @author Anders Nygren <anders.nygren@gmail.com>
+%%% @copyright 2006 Anders Nygren
+%%% @version {@vsn}
+%%% @doc Supervisor for fast_agi server. 
+%%% @private
 %%%
-%%% Created : 24 Feb 2006 by anders <anders@>
+%%% Created : 24 Feb 2006 by Anders Nygren
 %%%-------------------------------------------------------------------
 -module(sup_fast_agi).
 

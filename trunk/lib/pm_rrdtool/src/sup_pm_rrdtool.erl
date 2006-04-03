@@ -1,9 +1,11 @@
 %%%-------------------------------------------------------------------
 %%% File    : sup_pm_rrdtool.erl
-%%% Author  : Anders Nygren <anders.nygren@gmail.com>
-%%% Description : 
-%%%
 %%% Created :  8 Jul 2005 by Anders Nygren <anders.nygren@gmail.com>
+%%% @copyright 2005-2006 Anders Nygren
+%%% @version {@vsn}
+%%% @author Anders Nygren <anders.nygren@gmail.com>
+%%% @doc Supervisor for PM database backend based on RRDtool.
+%%% @end
 %%%-------------------------------------------------------------------
 -module(sup_pm_rrdtool).
 
@@ -21,8 +23,9 @@
 %% API functions
 %%====================================================================
 %%--------------------------------------------------------------------
-%% Function: start_link() -> {ok,Pid} | ignore | {error,Error}
-%% Description: Starts the supervisor
+%% @spec start_link() -> {ok,Pid} | ignore | {error,Error}
+%% @doc Starts the supervisor
+%% @end
 %%--------------------------------------------------------------------
 start_link() ->
     supervisor:start_link({local, ?SERVER}, ?MODULE, []).
@@ -38,6 +41,7 @@ start_link() ->
 %% supervisor:start_link/[2,3], this function is called by the new process 
 %% to find out about restart strategy, maximum restart frequency and child 
 %% specifications.
+%% @private
 %%--------------------------------------------------------------------
 init([]) ->
     AChild = {pm_rrd_config,{pm_rrd_config,start_link,[]},

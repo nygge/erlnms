@@ -20,20 +20,6 @@
 
 -include("rrdtool.hrl").
 
-% create() ->
-%     File="/home/anders/erlang/miniNMS/rrdtool/priv/ne1-ifn1.rrd",
-%     DSs=[{"in",'GAUGE',10,0,3},
-% 	 {"out",'GAUGE',10,0,2},
-% 	 {"errorin",'GAUGE',10,0,2},
-% 	 {"errorout",'GAUGE',10,0,2}
-% 	],
-%     RRAs=[{'LAST',0.5,1,60},    % 5 secs -> 5 min
-% 	  {'LAST',0.5,12,60},   % 12 dp -> 1 min, -> 60 min
-% 	  {'LAST',0.5,60,288},  % 60 dp -> 5 min, -> 24 hours
-% 	  {'LAST',0.5,360,48*7} % 360 dp -> 30 min, -> 7 days
-% 	 ],
-%     rrdtool:create(File,DSs,RRAs,def,5).
-
 create(N,I) ->
     SampleInt={sec,15},
     File="/tmp/RRDFile"++integer_to_list(N)++

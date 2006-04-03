@@ -4,6 +4,7 @@
 %%% Description : 
 %%%
 %%% Created :  5 Jun 2004 by Anders Nygren <anders.nygren@gmail.com>
+%%% @private
 %%%-------------------------------------------------------------------
 -module(sup_pm_basic).
 

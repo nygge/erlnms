@@ -1,18 +1,45 @@
+%%%-------------------------------------------------------------------
+%%% File    : fast_agi_socket.erl
+%%% Created : 30 Mar 2006 
+%%% @author Anders Nygren <anders.nygren@gmail.com>
+%%% @copyright 2006 Anders Nygren
+%%% @version {@vsn}
+%%% @doc Worker process for the fast_agi server.
+%%% Listens on the listener port for a connection request. When a
+%%% connection is establised it calls fast_agi_server:create/2 to
+%%% create a new listener process and the continues handling the
+%%% request.
+%%% @end
+%%%-------------------------------------------------------------------
+
 -module(fast_agi_socket).
 
--export([start_link/3]).
+-export([start_link/3,
+	send/2]).
 
 -export([init/1]).
 
--record(c,  {sock,
-             port,
-             peer_addr,
-             peer_port
-	     }).
+-include("fast_agi.hrl").
 
+%%-------------------------------------------------------------------
+%% API
+%%-------------------------------------------------------------------
+%% @doc Start the server
 start_link(ListenPid, ListenSocket, ListenPort) ->
-    proc_lib:spawn_link(?MODULE, init, [{ListenPid, ListenSocket, ListenPort}]).
+    proc_lib:spawn_link(?MODULE, init, [{ListenPid, 
+					 ListenSocket, 
+					 ListenPort}]).
 
+%% @doc Send a pdu to the client.
+send(C,Pack) ->
+    io:format("sending ~p~n",[Pack]),
+    gen_tcp:send(C#connection.sock,Pack),
+    check_result(C).
+
+%%-------------------------------------------------------------------
+%% Callbacks
+%%-------------------------------------------------------------------
+%% @private
 init({Listen_pid, Listen_socket, ListenPort}) ->
     case catch gen_tcp:accept(Listen_socket) of
 	{ok, Socket} ->
@@ -20,10 +47,10 @@ init({Listen_pid, Listen_socket, ListenPort}) ->
 	    %% create a new acceptor
 	    fast_agi_server:create(Listen_pid, self()),
 	    {ok, {Addr, Port}} = inet:peername(Socket),
-            C = #c{sock = Socket,
-                   port = ListenPort,
-                   peer_addr = Addr,
-                   peer_port = Port},
+            C = #connection{sock = Socket,
+			    port = ListenPort,
+			    peer_addr = Addr,
+			    peer_port = Port},
 	    request(C, []);
 	Else ->
 	    error_logger:error_report([{application, fast_agi},
@@ -32,8 +59,19 @@ init({Listen_pid, Listen_socket, ListenPort}) ->
 	    exit({error, accept_failed})
     end.
 
+%%-------------------------------------------------------------------
+%% Internal functions
+%%-------------------------------------------------------------------
+check_result(C) ->
+    {ok,R}=gen_tcp:recv(C#connection.sock, 0, 30000),
+    io:format("result ~p~n",[R]),
+    Res=string:sub_word(R,1,$\n),
+    [list_to_integer(string:sub_word(Res,1)),
+     list_to_integer(string:sub_word(string:sub_word(Res,2),2,$=)),
+     string:sub_word(Res,3)].
+
 request(C, Req) ->
-    case gen_tcp:recv(C#c.sock, 0, 30000) of
+    case gen_tcp:recv(C#connection.sock, 0, 30000) of
 	{ok,Some} ->
 	    case string:str(Some,"\n\n") of
 		0 ->
@@ -60,7 +98,7 @@ handle_req(C,RPars) ->
     case catch Mod:Fun(RPars,C) of
 	Res ->
 	    io:format("RESULT ~p~n",[Res]),
-	    gen_tcp:close(C#c.sock,read_write),
+	    gen_tcp:close(C#connection.sock,read_write),
 	    Res
     end.
 	

@@ -1,9 +1,11 @@
 %%%-------------------------------------------------------------------
 %%% File    : threshold_worker.erl
-%%% Author  : Anders Nygren <anders.nygren@gmail.com>
-%%% Description : 
-%%%
 %%% Created : 16 Jun 2004 by Anders Nygren <anders.nygren@gmail.com>
+%%% @copyright 2004-2006 Anders Nygren
+%%% @version {@vsn}
+%%% @author Anders Nygren <anders.nygren@gmail.com>
+%%% @doc Threshold worker process.
+%%% @end
 %%%-------------------------------------------------------------------
 -module(threshold_worker).
 
@@ -13,9 +15,12 @@
 -include("threshold_crossing_evt.hrl").
 -include("new_pm_data.hrl").
 
+%% @spec spawn(Data) -> pid()
+%% @doc Spawn the worker process.
 spawn(Data) ->
     proc_lib:spawn(?MODULE,init,[Data]).
 
+%% @private
 init(#new_pm_data{moi=MOI,moc=MOC,int=Step,time=Time}) ->
     case threshold_conf:get_cmds(ws,MOI,MOC,Step) of
 	Cmds when is_record(Cmds,th_cmd) ->

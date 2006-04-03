@@ -1,9 +1,11 @@
 %%%-------------------------------------------------------------------
 %%% File    : sup_threshold.erl
-%%% Author  : Anders Nygren <anders.nygren@gmail.com>
-%%% Description : 
-%%%
 %%% Created :  18 Jun 2004 by Anders Nygren <anders.nygren@gmail.com>
+%%% @copyright 2004-2006 Anders Nygren
+%%% @version {@vsn}
+%%% @author Anders Nygren <anders.nygren@gmail.com>
+%%% @doc Supervisor for the threshold application.
+%%% @end
 %%%-------------------------------------------------------------------
 -module(sup_threshold).
 

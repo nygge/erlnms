@@ -1,7 +1,10 @@
 %%%-------------------------------------------------------------------
 %%% File    : rrdtool_lock.erl
-%%% Author  : Anders Nygren <anders.nygren@gmail.com>
-%%% Description : 
+%%% @author Anders Nygren <anders.nygren@gmail.com>
+%%% @copyright 2004-2006 Anders Nygren
+%%% @version {@vsn}
+%%% @doc 
+%%% @end
 %%%
 %%% Created : 18 May 2004 by Anders Nygren <anders.nygren@gmail.com>
 %%%-------------------------------------------------------------------
@@ -54,6 +57,7 @@ release(Id) ->
 %%          ignore               |
 %%          {stop, Reason}
 %%--------------------------------------------------------------------
+%% @private
 init([]) ->
     Resources=ets:new(resources,[set,protected,{keypos,2}]),
     Users=ets:new(users,[set,protected,{keypos,2}]),
@@ -69,6 +73,7 @@ init([]) ->
 %%          {stop, Reason, Reply, State}   | (terminate/2 is called)
 %%          {stop, Reason, State}            (terminate/2 is called)
 %%--------------------------------------------------------------------
+%% @private
 handle_call(_Request, _From, State) ->
     Reply = ok,
     {reply, Reply, State}.
@@ -80,6 +85,7 @@ handle_call(_Request, _From, State) ->
 %%          {noreply, State, Timeout} |
 %%          {stop, Reason, State}            (terminate/2 is called)
 %%--------------------------------------------------------------------
+%% @private
 handle_cast({lock,Pid,Id,Type,Resources}, State) ->
     lock(Pid,Id,Type,Resources,State),
     {noreply,State};
@@ -98,6 +104,7 @@ handle_cast(_Msg, State) ->
 %%          {noreply, State, Timeout} |
 %%          {stop, Reason, State}            (terminate/2 is called)
 %%--------------------------------------------------------------------
+%% @private
 handle_info(_Info, State) ->
     {noreply, State}.
 
@@ -106,6 +113,7 @@ handle_info(_Info, State) ->
 %% Description: Shutdown the server
 %% Returns: any (ignored by gen_server)
 %%--------------------------------------------------------------------
+%% @private
 terminate(_Reason, _State) ->
     ok.
 
@@ -114,6 +122,7 @@ terminate(_Reason, _State) ->
 %% Purpose: Convert process state when code is changed
 %% Returns: {ok, NewState}
 %%--------------------------------------------------------------------
+%% @private
 code_change(_OldVsn, State, _Extra) ->
     {ok, State}.
 

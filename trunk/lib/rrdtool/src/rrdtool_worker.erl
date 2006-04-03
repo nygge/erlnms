@@ -1,7 +1,10 @@
 %%%-------------------------------------------------------------------
 %%% File    : rrdtool_worker.erl
-%%% Author  : Anders Nygren <anders.nygren@gmail.com>
-%%% Description : 
+%%% @author Anders Nygren <anders.nygren@gmail.com>
+%%% @copyright 2004-2006 Anders Nygren
+%%% @version {@vsn}
+%%% @doc 
+%%% @end
 %%%
 %%% Created : 23 May 2004 by Anders Nygren <anders.nygren@gmail.com>
 %%%-------------------------------------------------------------------
@@ -46,6 +49,7 @@ start_link() ->
 %%          ignore               |
 %%          {stop, Reason}
 %%--------------------------------------------------------------------
+%% @private
 init([]) ->
     {ok,Port}=rrd_lib:open(),
     {ok,#state{port=Port}}.
@@ -60,6 +64,7 @@ init([]) ->
 %%          {stop, Reason, Reply, State}   | (terminate/2 is called)
 %%          {stop, Reason, State}            (terminate/2 is called)
 %%--------------------------------------------------------------------
+%% @private
 handle_call(Request, _From, State) ->
     Reply = ok,
     {reply, Reply, State}.
@@ -71,6 +76,7 @@ handle_call(Request, _From, State) ->
 %%          {noreply, State, Timeout} |
 %%          {stop, Reason, State}            (terminate/2 is called)
 %%--------------------------------------------------------------------
+%% @private
 handle_cast(_Msg, State) ->
     {noreply, State}.
 
@@ -81,6 +87,7 @@ handle_cast(_Msg, State) ->
 %%          {noreply, State, Timeout} |
 %%          {stop, Reason, State}            (terminate/2 is called)
 %%--------------------------------------------------------------------
+%% @private
 handle_info({cmd,Id,{CMD,Pars}}, State) ->
     Res=do_cmd(State#state.port,CMD,Pars),
     rrdtool!{done,CMD,self(),Id,Res},
@@ -93,6 +100,7 @@ handle_info(_Info, State) ->
 %% Description: Shutdown the server
 %% Returns: any (ignored by gen_server)
 %%--------------------------------------------------------------------
+%% @private
 terminate(_Reason, _State) ->
     ok.
 
@@ -101,6 +109,7 @@ terminate(_Reason, _State) ->
 %% Purpose: Convert process state when code is changed
 %% Returns: {ok, NewState}
 %%--------------------------------------------------------------------
+%% @private
 code_change(_OldVsn, State, _Extra) ->
     {ok, State}.
 

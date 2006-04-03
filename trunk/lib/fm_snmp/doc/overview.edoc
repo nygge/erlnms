@@ -1,0 +1,74 @@
+@author Anders Nygren <anders.nygren@gmail.com>
+@copyright 2003-2006 Anders Nygren
+@version {@vsn}
+@title Fault Management SNMP Alarm reception
+@doc Fault Management SNMP Alarm reception receives SNMP traps and converts them to alarms in the internal format used by the Fault Management functions.
+
+== Contents ==
+<ol>
+  <li>{@section Introduction}</li>
+  <li>{@section Trap to alarm translation}</li>
+    <ol>
+      <li>{@section Trap to alarm mapping}</li>
+      <li>{@section Trap to Managed Object Instance mapping}</li>
+    </ol>
+</ol>
+
+== Introduction ==
+
+== Trap to alarm translation ==
+=== The problem ===
+There are several problems with translating SNMP traps to alarms according to DMTF and ITU-X.733.
+<ul>
+  <li>alarm clearing</li>
+  <li>naming</li>
+  <li>severity</li>
+</ul>
+There is no standardized way to signal severity, clearing or object identifiers in SNMP.
+
+Some equipment vendors have separate traps for raising respectively 
+clearing alarms. Others use the same trap but with different values in
+some variable.
+
+In many traps the only identifier to indicate the object that raises the 
+alarm is an index in some table in the MIB, e.g. ifIndex.
+
+=== Trap to alarm mapping ===
+The core of the trap to alarm mapping is the table trap2alarm that contains
+the following
+<ul>
+  <li>key</li>
+  <li>varbinds</li>
+  <li>alert type</li>
+  <li>severity</li>
+  <li>probable cause</li>
+  <li>probable cause description</li>
+  <li>proposed repair action</li>
+  <li>naming function</li>
+</ul>
+
+Where key contains
+
+<ul>
+  <li>node that sent the trap</li>
+  <li>node type</li>
+  <li>trap</li>
+</ul>
+
+It is possible to have wildcards for node, and node type.
+
+Varbinds contains a list of {'index of the varbind',value}, it is not possible to have wildcards in the varbinds.
+
+Key and varbinds are used together to find the correct row in the table.
+
+=== Trap to Managed Object Instance mapping ===
+Since with most traps we only have the IP address of the node that sent 
+the trap and an index in a table in the SNMP MIB, it is neccessary to 
+do some tricks to convert that to a more meaningfull name for human 
+consumption.
+
+To do that there is the 'naming function' in the trap2alarm record. That
+is a tuple {Module,Function} where Module:Function should be a function
+of arity 1. That function is called with the complete trap as argument,
+and the function shall return the Managed Object Instance that the alarm
+belongs to.

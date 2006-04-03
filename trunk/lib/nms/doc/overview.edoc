@@ -1,0 +1,43 @@
+@author Anders Nygren <anders.nygren@gmail.com>
+@copyright 2003-2006 Anders Nygren
+@version {@vsn}
+@title Network Management
+@doc
+
+== Contents ==
+<ol>
+  <li>{@section Introduction}</li>
+  <li>{@section Components}</li>
+  <li>{@section Events}</li>
+</ol>
+
+== Introduction ==
+The X Network Management system is based on the following principles
+<ul>
+  <li>modular</li>
+  <li>losely coupled components</li>
+  <li>event based</li>
+</ul>
+
+== Components ==
+The system currently contains the following components
+<ul>
+  <li>{@link //fm_basic. Fault Management}</li>
+  <ul>
+    <li>Service Monitoring</li>
+    <li>{@link //fm_snmp. SNMP Traps}</li>
+  </ul>
+  <li>Configuration Management</li>
+  <ul>
+    <li>Discovery</li>
+  </ul>
+  <li>Performance Management</li>
+  <ul>
+    <li>{@link //pm_basic. PM Core}</li>
+    <li>{@link //pm_rrdtool. RRDtool databse backend}</li>
+    <li>{@link //threshold. Threshold monitoring}</li>
+  </ul>
+</ul>
+
+== Events ==
+Almost all communication between components is done by events.

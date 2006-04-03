@@ -1,9 +1,11 @@
 %%%-------------------------------------------------------------------
 %%% File    : pm_config.erl
-%%% Author  : Anders Nygren <anders.nygren@gmail.com>
-%%% Description : 
-%%%
 %%% Created : 25 May 2004 by Anders Nygren <anders.nygren@gmail.com>
+%%% @copyright 2004-2006 Anders Nygren
+%%% @version {@vsn}
+%%% @author Anders Nygren <anders.nygren@gmail.com>
+%%% @doc pm_config handles all configuration data for pm_basic.
+%%% @end
 %%%-------------------------------------------------------------------
 -module(pm_config).
 
@@ -61,163 +63,305 @@
 %% External functions
 %%====================================================================
 %%--------------------------------------------------------------------
-%% Function: start_link/0
-%% Description: Starts the server
+%% @spec start_link() -> {ok,pid()}
+%% @doc Starts the server
+%% @end
 %%--------------------------------------------------------------------
 start_link() ->
     start_link({local, ?SERVER}).
+
+%% @spec start_link(Name) -> {ok,pid()}
+%% @doc Starts the server and register it with name Name.
+%% @end
 start_link(Name) ->
     gen_server:start_link(Name, ?MODULE, [], []).
 
-%% @spec get_counter_def(MOI,MOC,Cnt) -> Result
+%% @spec get_counter_def(MOI,MOC,Cnt) -> counter()
 %% @doc Get the definition of a counter.
+%% @end
 get_counter_def(MOI,MOC,Cnt) ->
     gen_server:call(?SERVER,{get_counter_def,MOI,MOC,Cnt},infinity).
 
+%% @spec get_counters(MOI::mo_instance(),MOC,CType) -> [counter()]
+%% @doc Get counters defined for a specific MO.
+%% @end
 get_counters(MOI,MOC,CType) when CType==primary;CType==derived;
 				 CType==all ->
     gen_server:call(?SERVER,{get_counters,MOI,MOC,CType}).
 
+%% @spec get_db_backend_cb(Backend::atom()) -> atom()
+%% @doc Get the callback module for the database backend Backend.
+%% @end
 get_db_backend_cb(Backend) ->
     gen_server:call(?SERVER,{get_db_backend_cb,Backend},infinity).
 
+%% @spec get_db_backend(MOI,MOC) -> atom()
+%% @doc Get the database backend that handles {MOI,MOC}.
+%% @end
 get_db_backend(MOI,MOC) ->
     gen_server:call(?SERVER,{get_db_backend,MOI,MOC},infinity).
 
 
+<<<<<<< .mine
 %% Db_Backend
-new_db_backend(Dur) when is_record(Dur,pm_db_backend) ->
-    gen_server:call(?SERVER,{new,Dur},infinity).
+%% @spec new_db_backend(DB_Backend::db_backend()) -> ok
+%% @doc Add a new database backend.
+%% @end
+new_db_backend(DB_Backend) when is_record(DB_Backend,pm_db_backend) ->
+    gen_server:call(?SERVER,{new,DB_Backend},infinity).
 
-delete_db_backend(Key) ->
+%% @spec delete_db_backend(Key) -> ok
+%% @doc Delete the definition of database backend Key.
+%% @end
+delete_db_backend(Key) -> 
     gen_server:call(?SERVER,{delete,pm_db_backend,Key},infinity).
 
+%% @spec get_db_backend(Key) -> db_backend()
+%% @doc Get the definition of database backend Key.
+%% @end
 get_db_backend(Key) ->
     gen_server:call(?SERVER,{get,pm_db_backend,Key},infinity).
 
+%% @spec get_all_db_backends() -> [db_backend()]
+%% @doc Get the definition of all database backends.
+%% @end
 get_all_db_backends() ->
     gen_server:call(?SERVER,{get_all,pm_db_backend},infinity).
 
 %% Store_Inst
+%% @spec new_store_inst(StoreInst::pm_store_inst()) -> ok
+%% @doc Add a new store instance.
+%% @end
 new_store_inst(Dur) when is_record(Dur,pm_store_inst) ->
     gen_server:call(?SERVER,{new,Dur},infinity).
 
+%% @spec delete_store_inst(Key::atom()) -> ok
+%% @doc Delete the definition of store instance Key.
+%% @end
 delete_store_inst(Key) ->
     gen_server:call(?SERVER,{delete,pm_store_inst,Key},infinity).
 
+%% @spec get_store_inst(Key) -> pm_store_inst()
+%% @doc Get the definition of store instance Key.
+%% @end
 get_store_inst(Key) ->
     gen_server:call(?SERVER,{get,pm_store_inst,Key},infinity).
 
+%% @spec get_all_store_insts() -> [pm_store_inst()]
+%% @doc Get the definition of all store instances.
+%% @end
 get_all_store_insts() ->
     gen_server:call(?SERVER,{get_all,pm_store_inst},infinity).
 
 %% Store_Type
-new_store_type(Dur) when is_record(Dur,pm_store_type) ->
-    gen_server:call(?SERVER,{new,Dur},infinity).
+%% @spec new_store_type(StoreType::pm_store_type()) -> ok
+%% @doc Add a new store type.
+%% @end
+new_store_type(StoreType) when is_record(StoreType,pm_store_type) ->
+    gen_server:call(?SERVER,{new,StoreType},infinity).
 
+%% @spec delete_store_type(Key::atom()) -> ok
+%% @doc Delete the definition of store type Key.
+%% @end
 delete_store_type(Key) ->
     gen_server:call(?SERVER,{delete,pm_store_type,Key},infinity).
 
+%% @spec get_store_type(Key) -> pm_store_type()
+%% @doc Get the definition of store type key.
+%% @end
 get_store_type(Key) ->
     gen_server:call(?SERVER,{get,pm_store_type,Key},infinity).
 
+%% @spec get_all_store_types() -> [pm_store_type()]
+%% @doc Get the definition of all store types.
+%% @end
 get_all_store_types() ->
     gen_server:call(?SERVER,{get_all,pm_store_type},infinity).
 
 %% Archive
+%% @spec new_archive(Archive::pm_archive()) -> ok
+%% @doc Add a new archive.
+%% @end
 new_archive(Dur) when is_record(Dur,pm_archive) ->
     gen_server:call(?SERVER,{new,Dur},infinity).
 
+%% @spec delete_archive(Key::atom()) -> ok
+%% @doc Delete the definition of archive Key
+%% @end
 delete_archive(Key) ->
     gen_server:call(?SERVER,{delete,pm_archive,Key},infinity).
 
+%% @spec get_archive(Key) -> pm_archive()
+%% @doc Get the definition of archive Key.
+%% @end
 get_archive(Key) ->
     gen_server:call(?SERVER,{get,pm_archive,Key},infinity).
 
+%% @spec get_all_archives() -> [pm_archive()]
+%% @doc Get the definition of all archives.
+%% @end
 get_all_archives() ->
     gen_server:call(?SERVER,{get_all,pm_archive},infinity).
 
 %% Aggregate
+%% @spec new_aggregate(Aggregate::pm_aggregate()) -> ok
+%% @doc Add a new aggregate.
+%% @end
 new_aggregate(Dur) when is_record(Dur,pm_aggregate) ->
     gen_server:call(?SERVER,{new,Dur},infinity).
 
+%% @spec delete_aggregate(Key) -> ok
+%% @doc Delete the definition of aggregate Key.
+%% @end
 delete_aggregate(Key) ->
     gen_server:call(?SERVER,{delete,pm_aggregate,Key},infinity).
 
+%% @spec get_aggregate(Key) -> pm_aggregate()
+%% @doc Get the definition of aggregate Key.
+%% @end
 get_aggregate(Key) ->
     gen_server:call(?SERVER,{get,pm_aggregate,Key},infinity).
 
+%% @spec get_all_aggregates() -> [pm_aggregate()]
+%% @doc Get the definition of all aggregates.
+%% @end
 get_all_aggregates() ->
     gen_server:call(?SERVER,{get_all,pm_aggregate},infinity).
 
 %% Mo_Type
-new_mo_type(Dur) when is_record(Dur,pm_mo_type) ->
-    gen_server:call(?SERVER,{new,Dur},infinity).
+%% @spec new_mo_type(MO_type::pm_mo_type()) -> ok
+%% @doc Add a new mo type.
+%% @end
+new_mo_type(MO_type) when is_record(MO_type,pm_mo_type) ->
+    gen_server:call(?SERVER,{new,MO_type},infinity).
 
+%% @spec delete_mo_type(Key::atom()) -> ok
+%% @doc Delete the definition of mo type Key.
+%% @end
 delete_mo_type(Key) ->
     gen_server:call(?SERVER,{delete,pm_mo_type,Key},infinity).
 
+%% @spec get_mo_type(Key::atom()) -> pm_mo_type()
+%% @doc Get the definition of mo type Key.
+%% @end
 get_mo_type(Key) ->
     gen_server:call(?SERVER,{get,pm_mo_type,Key},infinity).
 
+%% @spec get_all_mo_types() -> [pm_mo_type()]
+%% @doc Get the definition of all mo types.
+%% @end
 get_all_mo_types() ->
     gen_server:call(?SERVER,{get_all,pm_mo_type},infinity).
 
 %% Counter
-new_counter(Dur) when is_record(Dur,pm_counter) ->
-    gen_server:call(?SERVER,{new,Dur},infinity).
+%% @spec new_counter(Counter::pm_counter()) -> ok
+%% @doc Add a new counter.
+%% @end
+new_counter(Counter) when is_record(Counter,pm_counter) ->
+    gen_server:call(?SERVER,{new,Counter},infinity).
 
+%% @spec delete_counter(Key::atom()) -> ok
+%% @doc Delete the definition of counter Key.
+%% @end
 delete_counter(Key) ->
     gen_server:call(?SERVER,{delete,pm_counter,Key},infinity).
 
+%% @spec get_counter(Key) -> pm_counter()
+%% @doc Get the definition of counter Key.
+%% @end
 get_counter(Key) ->
     gen_server:call(?SERVER,{get,pm_counter,Key},infinity).
 
+%% @spec get_all_counters() -> [pm_counter()]
+%% @doc Get the definition of all counters.
+%% @end
 get_all_counters() ->
     gen_server:call(?SERVER,{get_all,pm_counter},infinity).
 
 %% Der_Counter
-new_der_counter(Dur) when is_record(Dur,pm_der_counter) ->
-    gen_server:call(?SERVER,{new,Dur},infinity).
+%% @spec new_der_counter(DerCounter::pm_der_counter()) -> ok
+%% @doc Add a new derived counter.
+%% @end
+new_der_counter(DerCounter) ->
+    gen_server:call(?SERVER,{new,DerCounter},infinity).
 
+%% @spec delete_der_counter(Key::atom()) -> pm_der_counter()
+%% @doc Delete the definition of derived counter Key.
+%% @end
 delete_der_counter(Key) ->
     gen_server:call(?SERVER,{delete,pm_der_counter,Key},infinity).
 
+%% @spec get_der_counter(Key) -> pm_der_counter()
+%% @doc Get the definition of derived counter Key.
+%% @end
 get_der_counter(Key) ->
     gen_server:call(?SERVER,{get,pm_der_counter,Key},infinity).
 
+%% @spec get_all_der_counters() -> [pm_der_counter()]
+%% @doc Get the definition of all derived counters.
+%% @end
 get_all_der_counters() ->
     gen_server:call(?SERVER,{get_all,pm_der_counter},infinity).
 
 %% Duration
+%% @spec new_duration(Dur::pm_duration()) -> ok
+%% @doc Add a new duration.
+%% @end
 new_duration(Dur) when is_record(Dur,pm_duration) ->
     gen_server:call(?SERVER,{new,Dur},infinity).
 
+%% @spec delete_duration(Key::atom()) -> ok
+%% @doc Delete the definition of duration Key.
+%% @end
 delete_duration(Key) ->
     gen_server:call(?SERVER,{delete,pm_duration,Key},infinity).
 
+%% @spec get_duration(Key) -> pm_duration()
+%% @doc Get the definition of duration Key.
+%% @end
 get_duration(Key) ->
     gen_server:call(?SERVER,{get,pm_duration,Key},infinity).
 
+%% @spec get_all_durations() -> [pm_duration()]
+%% @doc Get the definition of all durations.
+%% @end
 get_all_durations() ->
     gen_server:call(?SERVER,{get_all,pm_duration},infinity).
 
 %% Events
-new_event(Dur) when is_record(Dur,pm_event) ->
-    gen_server:call(?SERVER,{new,Dur},infinity).
+%% @spec new_event(Event::pm_event()) -> ok
+%% @doc Add a new event.
+%% @end
+new_event(Event) when is_record(Event,pm_event) ->
+    gen_server:call(?SERVER,{new,Event},infinity).
 
+%% @spec delete_event(Key) -> ok
+%% @doc Delete the definition of event Key.
+%% @end
 delete_event(Key) ->
     gen_server:call(?SERVER,{delete,pm_event,Key},infinity).
 
+%% @spec get_event(Key) -> pm_event()
+%% @doc Get the definition of event Key.
+%% @end
 get_event(Key) ->
     gen_server:call(?SERVER,{get,pm_event,Key},infinity).
 
+%% @spec get_events(MOI,MOC) -> pm_event()
+%% @doc Get the definition of all events for a specific measurement object, {MOI,MOC}.
+%% @end
 get_events(MOI,MOC) ->
     gen_server:call(?SERVER,{get_events,MOI,MOC},infinity).
 
+%% @spec get_all_events() -> pm_event()
+%% @doc Get the definition of all events.
+%% @end
 get_all_events() ->
     gen_server:call(?SERVER,{get_all,pm_event},infinity).
 
+%% @spec get_store_def(Name) -> What
+%% @doc Get the definition of store Name.
+%% @end
 get_store_def(Name) ->
     gen_server:call(?SERVER,{get_store_def,Name},infinity).
 
@@ -232,6 +376,7 @@ get_store_def(Name) ->
 %%          {ok, State, Timeout} |
 %%          ignore               |
 %%          {stop, Reason}
+%% @private
 %%--------------------------------------------------------------------
 init([]) ->
     {ok, #state{}}.
@@ -245,6 +390,7 @@ init([]) ->
 %%          {noreply, State, Timeout}      |
 %%          {stop, Reason, Reply, State}   | (terminate/2 is called)
 %%          {stop, Reason, State}            (terminate/2 is called)
+%% @private
 %%--------------------------------------------------------------------
 handle_call({new,Record}, _From, State) ->
     Reply=insert_tab(Record),
@@ -379,6 +525,7 @@ handle_call({get_store_def,Name}, _From, State) ->
 %% Returns: {noreply, State}          |
 %%          {noreply, State, Timeout} |
 %%          {stop, Reason, State}            (terminate/2 is called)
+%% @private
 %%--------------------------------------------------------------------
 handle_cast(_Msg, State) ->
     {noreply, State}.
@@ -389,6 +536,7 @@ handle_cast(_Msg, State) ->
 %% Returns: {noreply, State}          |
 %%          {noreply, State, Timeout} |
 %%          {stop, Reason, State}            (terminate/2 is called)
+%% @private
 %%--------------------------------------------------------------------
 handle_info(_Info, State) ->
     {noreply, State}.
@@ -397,6 +545,7 @@ handle_info(_Info, State) ->
 %% Function: terminate/2
 %% Description: Shutdown the server
 %% Returns: any (ignored by gen_server)
+%% @private
 %%--------------------------------------------------------------------
 terminate(_Reason, _State) ->
     ok.
@@ -405,6 +554,7 @@ terminate(_Reason, _State) ->
 %% Func: code_change/3
 %% Purpose: Convert process state when code is changed
 %% Returns: {ok, NewState}
+%% @private
 %%--------------------------------------------------------------------
 code_change(_OldVsn, State, _Extra) ->
     {ok, State}.

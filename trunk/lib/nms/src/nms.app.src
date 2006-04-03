@@ -1,0 +1,8 @@
+{application, nms,
+ [{description, "Network Management system core functions"},
+  {vsn,"%VSN%"},
+  {modules,[%MODULES%]},
+  {applications,[kernel,stdlib]},
+  {included_applications,[]},
+  {mod, {nms_app,[]}}
+ ]}.

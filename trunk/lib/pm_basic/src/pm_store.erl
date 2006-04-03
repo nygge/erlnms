@@ -1,9 +1,11 @@
 %%%-------------------------------------------------------------------
 %%% File    : pm_store.erl
-%%% Author  : Anders Nygren <anders.nygren@gmail.com>
-%%% Description : 
-%%%
 %%% Created :  5 Jun 2004 by Anders Nygren <anders.nygren@gmail.com>
+%%% @copyright 2004-2006 Anders Nygren
+%%% @author Anders Nygren <anders.nygren@gmail.com>
+%%% @doc pm_store provides the main interface to the performance data
+%%% storage. The real work is being done by the database backends.
+%%%
 %%%-------------------------------------------------------------------
 -module(pm_store).
 
@@ -16,22 +18,16 @@
 
 %%--------------------------------------------------------------------
 %% External exports
--export([
-	 create/3,
-% 	 fetch/1,
-%%	 fetch/4,
+-export([create/3,
 	 fetch/5,
-%% 	 fetch/6,
 	 fetch/7,
-% 	 graph/3,
 	 update/4]).
 
 %%====================================================================
 %% External functions
 %%====================================================================
 
-%% @spec create(Name,MOI,Store_type,BackEnd) -> Result
-%% Name        = atom()
+%% @spec create(MOI,Store_type,BackEnd) -> Result
 %% MOI         = [RDN]
 %% RDN         = {Type,Id}
 %% Type        = atom()
@@ -41,6 +37,7 @@
 %% Result      = {atomic,Reply}
 %% Reply       = WHAT
 %% @doc Create a measurement store.
+%% @end
 
 create(MOI,StoreType,BackEnd) when is_list(MOI),
 				   is_atom(StoreType),
@@ -72,17 +69,15 @@ create(MOI,StoreType,BackEnd) when is_list(MOI),
 %%     {found,Counters}=pm_config:get_counters(MOI,MOC,all),
 %%     fetch(MOI,MOC,Counters,Res).
 
-%% @spec fetch(MOI,MOC,Counters,CF,Res) -> Result
+%% @spec fetch(MOI,MOC,Counters,CF,Res::duration()) -> Result
 %% MOI         = [RDN]
-%% RDN         = {Type,Id}
-%% Type        = atom()
-%% Id          = atom()
+%% RDN         = {Type::atom(),Id::atom()}
 %% MOC         = atom()
-%% Counters    = [Counter]
-%% Counter     = atom()
+%% Counters    = [Counter::atom()]
 %% CF          = atom
-%% Res         = Duration
 %% Result      = WHAT
+%% @doc Fetch the latest row of data from the performance data store.
+%% @end
 
 fetch(MOI,MOC,Counters,CF,Res) ->
     Esecs=utils:datetime_to_epoch(calendar:universal_time()),
@@ -90,11 +85,7 @@ fetch(MOI,MOC,Counters,CF,Res) ->
     Time=utils:epoch_to_datetime((Esecs div RSecs) * RSecs),
     fetch(MOI,MOC,Counters,CF,Res,Time,Time).
 
-% fetch(MOI,MOC,Res,Start,Stop) ->
-%     {found,Counters}=pm_config:get_counters(MOI,MOC,all),
-%     fetch(MOI,MOC,Counters,Res,Start,Stop).
-
-%% @spec fetch(MOI,MOC,Counters,CF,Res,Rows,Stop) -> Result
+%% @spec fetch(MOI,MOC,Counters,CF,Res,From,Stop) -> Result
 %% MOI         = [RDN]
 %% RDN         = {Type,Id}
 %% Type        = atom()
@@ -104,9 +95,16 @@ fetch(MOI,MOC,Counters,CF,Res) ->
 %% Counter     = atom()
 %% CF          = atom
 %% Res         = Duration
+%% From        = Rows|Start
 %% Rows        = integer()
+%% Start       = datetime()
 %% Stop        = datetime()
 %% Result      = WHAT
+%% @doc Fetch data from the performance data store.
+%% <p>If From is an integer() fetch will return From rows of data ending
+%% at time Stop.</p>
+%% <p>If From is a datetime() fetch will return rows of data starting at time Start and ending at time Stop.</p>
+%% @end
 
 fetch(MOI,MOC,Counters,CF,Res,Rows,Stop) when is_integer(Rows),Rows>0 ->
     S=utils:datetime_to_epoch(Stop),
@@ -127,6 +125,8 @@ fetch(MOI,MOC,Counters,CF,Res,Rows,Stop) when is_integer(Rows),Rows>0 ->
 %% Start       = datetime()
 %% Stop        = datetime()
 %% Result      = WHAT
+%% @doc Fetch data from the performance data store.
+%% @end
 
 fetch(MOI,MOC,Counters,CF,Res,Start,Stop) when is_tuple(Start) ->
     case pm_config:get_db_backend(MOI,MOC) of
@@ -145,6 +145,8 @@ fetch(MOI,MOC,Counters,CF,Res,Start,Stop) when is_tuple(Start) ->
 %% Time        = datetime()
 %% Result      = {ok,[TimeStamp]}
 %% TimeStamp   = integer()
+%% @doc Insert data in the performance data store.
+%% @end
 
 update(MOI,MOC,Time,Data) ->
     case pm_config:get_db_backend(MOI,MOC) of

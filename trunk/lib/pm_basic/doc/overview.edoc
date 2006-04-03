@@ -1,0 +1,118 @@
+@author Anders Nygren <anders.nygren@gmail.com>
+@copyright 2003-2006 Anders Nygren
+@version {@vsn}
+@title Performance Management Basic functions
+
+@doc PM_Basic is the core component i the Perfomance management area. It provides a model for performance data storage. The actual performance data storage is handled by plugin modules in separate applications. This makes it possible to add different types of storage backends, e.g. RRDtool or a RDBMS.
+
+== Contents ==
+<ol>
+  <li>{@section Introduction}</li>
+    <ol>
+      <li>{@section Data Collection}</li>
+      <li>{@section Events}</li>
+      <li>{@section Data Storage}</li>
+    </ol>
+  <li>{@section Storage model}</li>
+  <ol>
+    <li>{@section Value}</li>
+      <ol>
+        <li>{@section Gauge}</li>
+        <li>{@section Counter}</li>
+        <li>{@section Derive}</li>
+        <li>{@section Absolute}</li>
+      </ol>
+    <li>{@section Derived Values}</li>
+    <li>{@section Measurement Object Type}</li>
+    <li>{@section Aggregate}</li>
+    <li>{@section Archive}</li>
+    <li>{@section Store Type}</li>
+    <li>{@section Store Instance}</li>
+  </ol>
+</ol>
+
+== Introduction ==
+=== Data Collection ===
+PM_Basic does not contain any functions for collecting data, that task is left to separate collector applications that are adapted to handle different protocols and/or data formats.
+
+Instead pm_basic subscribes to pm_raw_data events that signals the arrival of new pm data.
+
+=== Events ===
+PM_Basic can generate events when new data is received. It is possible to specify events with different intervals, i.e. even if data is collected every 5 minutes it is possible to specify that events should be generated every 15 minutes and every hour.
+
+=== Data Storage ===
+PM_Basic does not contain any database for storing the performance data, instead this is handled by separate database backends, this makes it possible to use different database backends for different data or requirements.
+
+== Storage model ==
+
+=== Value ===
+A <i>value</i> is a value that is collected from some resource. Typically it is a counter of some type of event, e.g. bits sent or received.
+
+The definition of a value needs
+<ul>
+  <li>name</li>
+  <li>type</li>
+  <li>heartbeat</li>
+  <li>min value</li>
+  <li>max value</li>
+</ul>
+
+The type is one of
+<ul>
+  <li>gauge</li>
+  <li>counter</li>
+  <li>derive</li>
+  <li>absolute</li>
+</ul>
+
+==== Gauge ====
+Gauge is used for things like temperature or amount of free memory.
+
+==== Counter ====
+Counter is used for continuosly increasing values like most performance counters in SNMP MIBS.
+
+==== Derive ====
+Derive calculates the derivative of a line going from the last to the current value.
+
+==== Absolute ====
+Absolute is used for values that are reset when they are read.
+
+=== Derived Values ===
+Derived values are not collected from any source, instead they are calculated from the values of other values.
+
+=== Measurement Object Type ===
+A measurement Object is used to group a number of values and derived values into one unit that represent the performance indicators for a specific object type, e.g. a specific type of interface.
+
+=== Aggregate ===
+An Aggregate defines how collected data is consolidated into data with diffenet resolutions. It is independent of any specific Measurement Object Types.
+
+To define an aggregate the following is needed.
+<ul>
+  <li>name</li>
+  <li>consolidation function</li>
+  <li>unknown values</li>
+  <li>resolution</li>
+  <li>duration</li>
+</ul>
+
+Consolidation function can be
+
+<ul>
+  <li>average</li>
+  <li>min</li>
+  <li>max</li>
+  <li>last</li>
+</ul>
+
+The unknown values defines how many of the primary data points may be unknown while the consolidated value still is considered as known.
+
+Both resolution and duration are given in units of time, we can define an aggregate that stores the maximum values with a resolution of 5 minutes for 2 weeks.
+
+=== Archive ===
+An archive only specify a number of aggregates.
+
+=== Store Type ===
+A Store Type is where everything comes together, it combines an Measurement Object Type, which specify the values, with an Archive, which specify which aggregates shall be used, specifying how longa data is stored and at what resolutions.
+
+=== Store Instance ===
+A Store Instance represent a data store for a specific object. It contains the Store Type and the performance data store backend that manages the data store.

@@ -1,0 +1,5 @@
+@author Anders Nygren <anders.nygren@gmail.com>
+@copyright 2006 Anders Nygren
+@version {@vsn}
+@title Performance Management RRDtool database backend
+@doc PM store backend using RRDtool.

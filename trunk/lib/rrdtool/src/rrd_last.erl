@@ -1,7 +1,11 @@
 %%%-------------------------------------------------------------------
 %%% File    : rrd_last.erl
-%%% Author  : Anders Nygren <anders.nygren@gmail.com>
-%%% Description : 
+%%% @author Anders Nygren <anders.nygren@gmail.com>
+%%% @copyright 2003-2006 Anders Nygren
+%%% @version {@vsn}
+%%% @doc 
+%%% @end
+%%% @private
 %%%
 %%% Created : 30 Aug 2003 by Anders Nygren <anders.nygren@gmail.com>
 %%%-------------------------------------------------------------------

@@ -1,10 +1,15 @@
 %%%-------------------------------------------------------------------
 %%% File    : rrd_fetch.erl
-%%% Author  : Anders Nygren <anders.nygren@gmail.com>
-%%% Description : 
-%%%
-%%% Created : 25 Jan 2004 by Anders Nygren <anders.nygren@gmail.com>
+%%% @author Anders Nygren <anders.nygren@gmail.com>
+%%% @copyright 2004-2006 Anders Nygren
+%%% @version {@vsn}
+%%% @doc 
+%%% @end
+%%% @private
+%%% Created : 25 Jan 2004 by Anders Nygren
 %%%-------------------------------------------------------------------
+%% %@private
+
 -module(rrd_fetch).
 
 -export([do_fetch/6]).

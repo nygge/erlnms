@@ -80,23 +80,6 @@ init([]) ->
 %%                                      {stop, Reason, State}
 %% Description: Handling call messages
 %%--------------------------------------------------------------------
-%% handle_call(graph, _From, State) ->
-%%     File="/tmp/RRD_avg.png",
-%%     Flags={flags,all_flags()},
-%%     DEF={def,[{vname1,rrd1,ds_name1,cf1},
-%% 	      {vname2,rrd2,ds_name2,cf2}]},
-%%     CDEF={cdef,[{vname1,expr1},{vname2,expr2}]},
-%%     PRINT={print,[{vname,cf,format}]},
-%%     COMMENT={comment,[comment]},
-%%     HRULE={hrule,[color,legend]},
-%%     VRULE={vrule,[color,legend]},
-%%     LINE={line,[{1,vname,color,legend},{2,vname,color,legend}]},
-%%     AREA={area,[]},
-%%     STACK={stack,[]},
-%%     Pars=[Flags,DEF,CDEF,PRINT,COMMENT,HRULE,VRULE],
-%%     rrd_lib:graph(State#state.port,File,Pars),
-%%     Reply = ok,
-%%     {reply, Reply, State};
 
 handle_call(export, _From, State) ->
     DEFs=[#rrd_def{vname=avg1,
