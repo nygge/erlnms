@@ -502,14 +502,14 @@ make_pdu(#mailboxcount{mailbox=Mbox}) ->
 make_pdu(#mailbox_status{mailbox=Mailbox}) ->
     ["Action: MailboxStatus\r\n"
      "Mailbox: ",Mailbox,"\r\n"];
-    
+
 make_pdu(#monitor{channel=Channel,file=File,format=Format,mix=Mix}) ->
     ["Action: Monitor\r\n"
      "Channel: ",Channel,"\r\n"
      "File: ",File,"\r\n"
      "Format: ",Format,"\r\n"
      "Mix: ",Mix,"\r\n"];
-    
+
 make_pdu(#parked_calls{}) ->
     "Action: ParkedCalls\r\n";
     
@@ -525,7 +525,7 @@ make_pdu(#queue_add{interface=Interface,
      "Queue: ",Queue,"\r\n"
      "Penalty: ",Penalty,"\r\n"
      "Pause: ",Pause,"\r\n"  ];
-    
+
 make_pdu(#queue_pause{interface=Interface,
 		      queue=Queue,
 		      pause=Pause}) ->
@@ -533,21 +533,21 @@ make_pdu(#queue_pause{interface=Interface,
      "Interface: ",Interface,"\r\n"
      "Queue: ",Queue,"\r\n"
      "Pause: ",Pause,"\r\n"  ];
-    
+
 make_pdu(#queue_remove{interface=Interface,
 		       queue=Queue}) ->
     ["Action: QueueRemove\r\n"
      "Interface: ",Interface,"\r\n"
      "Queue: ",Queue, "\r\n"  ];
-    
+
 make_pdu(#queues{}) ->
     ["Action: Queues\r\n"
      ];
-    
+
 make_pdu(#queue_status{}) ->
     ["Action: QueueStatus\r\n"
      ];
-    
+
 make_pdu(#redirect{channel=Channel,
 		   extrachannel=ExtraChannel,
 		   exten=Exten,
@@ -559,7 +559,7 @@ make_pdu(#redirect{channel=Channel,
      "Exten: ",Exten,"\r\n"
      "Context: ",Context,"\r\n"
      "Priority: ",Priority , "\r\n" ];
-    
+
 make_pdu(#set_cdr_user_field{channel=Channel,
 			     userfield=Userfield,
 			     append=Append}) ->
@@ -567,7 +567,7 @@ make_pdu(#set_cdr_user_field{channel=Channel,
      "Channel: ",Channel,"\r\n"
      "Userfield: ",Userfield,"\r\n"
      "Append: ",Append, "\r\n"   ];
-    
+
 make_pdu(#set_var{channel=Channel,
 		  variable=Variable,
 		  value=Value}) ->
@@ -575,7 +575,7 @@ make_pdu(#set_var{channel=Channel,
      "Channel: ",Channel,"\r\n"
      "Variable: ",Variable,"\r\n"
      "Value: ",Value, "\r\n"   ];
-    
+
 make_pdu(#sip_showpeer{peer=Peer}) ->
     ["Action: SIPshowpeer\r\n",
      "Peer: ",Peer,"\r\n"];
@@ -585,36 +585,42 @@ make_pdu(#sip_peers{}) ->
 
 make_pdu(#status{}) ->
     "Action: Status\r\n";
-    
+
 make_pdu(#stop_monitor{channel=Channel}) ->
     ["Action: StopMonitor\r\n"
      "Channel: ",Channel,"\r\n"];
-    
+
 make_pdu(#zap_dial_offhook{channel=Channel,
 			   number=Number}) ->
     ["Action: ZapDialOffhook\r\n"
      "Channel: ",Channel,"\r\n"
      "Number: ",Number,"\r\n"];
-    
+
 make_pdu(#zap_dnd_off{channel=Channel}) ->
     ["Action: ZapDNDOff\r\n"
      "Channel: ",Channel,"\r\n"];
-    
+
 make_pdu(#zap_dnd_on{channel=Channel}) ->
     ["Action: ZapDNDOn\r\n"
      "Channel: ",Channel,"\r\n"];
-    
+
 make_pdu(#zap_hangup{channel=Channel}) ->
     ["Action: ZapHangup\r\n"
      "Channel: ",Channel,"\r\n"];
-    
+
 make_pdu(#zap_show_channels{}) ->
     "Action: ZapShowChannels\r\n".
-    
+
 %%--------------------------------------------------------------------
 %%
 %%--------------------------------------------------------------------
 
+%% @doc There are 3 types of messages, alarm, event and response.
+%% They are identified by a header with "Alarm","Event" or "Response".
+%% But there is a small complication some events are really part of
+%% a response, those can be identified by the presence of an "ActionId"
+%% line, (this requires that "ActionId" was set in the request.
+%% @end.
 msg_type(Msg) ->
     case check_event(Msg) of
 	false ->
@@ -665,6 +671,7 @@ handle_response({AId,From,Cmd},Res,Pdu,State) when State#state.list_resp==false 
 	    gen_server:reply(From,{Cmd,Res,Pdu}),
 	    State#state{pending=undefined,state=free}
     end;
+
 handle_response({AId,From,Cmd},Res,Pdu,State) ->
     case lists:keysearch("Event",1,Pdu) of
 	{value,{"Event","PeerlistComplete"}} ->

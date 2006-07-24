@@ -103,13 +103,5 @@ handle_req(C,RPars) ->
     end.
 	
 get_script(Req) ->
-    Script=get_par(agi_network_script,Req),
+    Script=fast_agi:get_var("agi_network_script",Req),
     list_to_tuple([list_to_atom(T) || T<-string:tokens(Script,"/")]).
-
-get_par(Par,Req) ->
-    case lists:keysearch(Par,1,Req) of
-	{value,{Par,Value}} ->
-	    Value;
-	_Notfound ->
-	    []
-    end.

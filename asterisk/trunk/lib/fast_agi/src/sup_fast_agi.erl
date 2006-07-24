@@ -13,7 +13,7 @@
 -behaviour(supervisor).
 
 %% API
--export([start_link/0]).
+-export([start_link/1]).
 
 %% Supervisor callbacks
 -export([init/1]).
@@ -27,7 +27,7 @@
 %% Function: start_link() -> {ok,Pid} | ignore | {error,Error}
 %% Description: Starts the supervisor
 %%--------------------------------------------------------------------
-start_link() ->
+start_link(_) ->
     supervisor:start_link({local, ?SERVER}, ?MODULE, []).
 
 %%====================================================================
@@ -43,10 +43,19 @@ start_link() ->
 %% specifications.
 %%--------------------------------------------------------------------
 init([]) ->
+    Pars=case application:get_env(port) of
+	     {ok,Port} ->
+		 [Port]++ case application:get_env(opts) of
+			      {ok,Opts} -> [Opts];
+			      _Nothing -> []
+			  end;
+	     _Nothing ->
+		 []
+	 end,
     Server=fast_agi_server,
-    AChild = {Server,{Server,start_link,[]},
-	      permanent,2000,worker,[Server]},
-    {ok,{{one_for_all,0,1}, [AChild]}}.
+    S = {Server,{Server,start_link,Pars},
+	 permanent,2000,worker,[Server]},
+    {ok,{{one_for_all,0,1}, [S]}}.
 
 %%====================================================================
 %% Internal functions

@@ -1,16 +1,16 @@
 %%%-------------------------------------------------------------------
 %%% File    : ast_manager.erl
-%%% Author  : anders <anders@>
+%%% Author  : anders <anders.nygren@gmail.com>
 %%% Description : 
 %%%
-%%% Created : 20 Feb 2006 by anders <anders@>
+%%% Created : 20 Feb 2006 by anders <anders.nygren@gmail.com>
 %%%-------------------------------------------------------------------
 -module(ast_man_drv).
 
 -behaviour(gen_server).
 
 %% API
--export([start_link/0,
+-export([start_link/4,
 	 send/1
 	]).
 
@@ -35,8 +35,11 @@
 %% Function: start_link() -> {ok,Pid} | ignore | {error,Error}
 %% Description: Starts the server
 %%--------------------------------------------------------------------
-start_link() ->
-    gen_server:start_link({local, ?SERVER}, ?MODULE, [], []).
+start_link(IPaddr,Port,User,Passwd) ->
+    gen_server:start_link({local, ?SERVER}, ?MODULE,
+			  [IPaddr,Port,User,Passwd], []).
+start_link(Name,IPaddr,Port,User,Passwd) ->
+    gen_server:start_link(Name, ?MODULE, [IPaddr,Port,User,Passwd], []).
 
 send(Request) ->
     gen_server:call(?SERVER,{api,Request}).
@@ -53,8 +56,8 @@ send(Request) ->
 %%                         {stop, Reason}
 %% Description: Initiates the server
 %%--------------------------------------------------------------------
-init([]) ->
-    {ok,Sock} = gen_tcp:connect({192,168,1,50},5038,[list]),
+init([IPaddr,Port,User,Passwd]) ->
+    {ok,Sock} = gen_tcp:connect(IPaddr,Port,[list]),
     {ok, #state{sock=Sock}}.
 
 %%--------------------------------------------------------------------
@@ -95,6 +98,8 @@ handle_info({tcp,_Sock,"Asterisk Call Manager"++_More}, State) ->
 handle_info({tcp,_Sock,Data}, State) ->
     Rest=parse(State#state.rest ++ Data),
     {noreply, State#state{rest=Rest}};
+handle_info({tcp_close,_Sock,Data}, State) ->
+    {noreply, State#state{sock=undefined}};
 handle_info(_Info, State) ->
     {noreply, State}.
 

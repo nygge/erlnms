@@ -526,11 +526,12 @@ verbose(C,Message,Level) ->
 wait_for_digit(C,Timeout) ->
     fast_agi_socket:send(C,["WAIT FOR DIGIT",integer_to_list(Timeout),"\n"]).
 
-%% @spec get_var(Var,Req) -> Result
+%% @spec get_var(Var::string(),Req::request()) -> string() | undefined
 %%    Var = Variable
 %%    Req = Request
 %%
-%% @doc Get the value of a variable passed from Asterisk.
+%% @doc Get the value of a variable passed from Asterisk. 
+%% Returns undefined if the variable is not set.
 %% @end
 get_var(Var,Req) ->
     case lists:keysearch(Var,1,Req) of

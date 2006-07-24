@@ -8,15 +8,14 @@
 %%% Spawns a listener process that listens on the assigned port.
 %%% When a connection is made the listener calls fast_agi_server:create/2
 %%% to create a new listener process and continues handling the request.
-%%% %@private
-%%%
+%%% @end
 %%%-------------------------------------------------------------------
 -module(fast_agi_server).
 
 -behaviour(gen_server).
 
 %% API
--export([start_link/0,
+-export([start_link/0,start_link/1,start_link/2,
 	 create/2]).
 
 %% gen_server callbacks
@@ -35,15 +34,37 @@
 %%--------------------------------------------------------------------
 %% @spec start_link() -> {ok,Pid} | ignore | {error,Error}
 %% @doc Start the server.
+%% @equiv start_link(4573,[])
 %% @end
 %%--------------------------------------------------------------------
 start_link() ->
-    gen_server:start_link({local, ?SERVER}, ?MODULE, [], []).
+    start_link(?PORT).
+
+%%--------------------------------------------------------------------
+%% @spec start_link(Port::integer()) -> {ok,Pid} | ignore | {error,Error}
+%% @doc Start the server.
+%% @equiv start_link(Port,[])
+%% @end
+%%--------------------------------------------------------------------
+start_link(Port) when is_integer(Port)->
+    start_link(Port,[]).
+
+%%--------------------------------------------------------------------
+%% @spec start_link(Port::integer(),Opts) -> {ok,Pid} | 
+%%                                           ignore | 
+%%                                           {error,Error}
+%% Opts = [Opt]
+%% @doc Start the server. See inet:setopts/2 for values of Opt.
+%% @end
+%%--------------------------------------------------------------------
+start_link(Port,Opts) when is_integer(Port), is_list(Opts) ->
+    gen_server:start_link({local,?SERVER},?MODULE,[Port,Opts],[]).
 
 %%--------------------------------------------------------------------
 %% spec create(ServerPid, Pid) -> ok
 %% @doc Create a new listener process.
 %% @end
+%% @private
 %%--------------------------------------------------------------------
 create(ServerPid, Pid) ->
     gen_server:cast(ServerPid, {create, Pid}).
@@ -60,11 +81,11 @@ create(ServerPid, Pid) ->
 %% Description: Initiates the server
 %%--------------------------------------------------------------------
 %% @private
-init([]) ->
+init([Port,Opts]) ->
     process_flag(trap_exit, true),
-    case gen_tcp:listen(?PORT, [list, {packet, 0},
-				{reuseaddr,true},
-				{active, false}]) of
+    case gen_tcp:listen(Port, Opts++[list, {packet, 0},
+				     {reuseaddr,true},
+				     {active, false}]) of
 	{ok, Listen_socket} ->
 	    %%Create first accepting process
 	    Pid = fast_agi_socket:start_link(self(), Listen_socket, ?PORT),

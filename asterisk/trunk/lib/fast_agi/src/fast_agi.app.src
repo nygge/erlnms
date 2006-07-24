@@ -4,5 +4,5 @@
          {modules,[%MODULES%]},
 	 {registered,[]},
 	 {applications,[kernel,stdlib]},
-         {mod,fast_agi_app,[]},
+         {mod,{fast_agi_app,[]}},
 	 {env,[]}]}.
