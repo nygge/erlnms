@@ -10,17 +10,21 @@
 -export([read/1]).
 
 read(File) ->
-    {ok,[{Name,Vsn,{apps,Apps},{nodes,Nodes},{dist,Dist}}]}=file:consult(File),
-    Rels=[mk_rel(Name,Vsn,Node,Apps) || Node <- Nodes],
+    {ok,[{Name,Vsn,{erts,Erts},{apps,Apps},
+	  {nodes,Nodes},{dist,Dist}}]}=file:consult(File),
+    Rels=[mk_rel(Name,Vsn,Erts,Node,Apps) || Node <- Nodes],
     Dists=mk_dists(Nodes,Dist),
     NNodes=ins_dists(Nodes,Dists),
     Configs=[mk_config(Node,Apps) || Node <- NNodes],
+    write_rels(Rels),
+    write_configs(Configs),
     [{releases,Rels},{configs,Configs}].
 
 ins_dists(Nodes,Dists) ->
     [ins_dist(Node,Dists) || Node<-Nodes].
 
 ins_dist({Node,Apps}=Orig,Dists) ->
+io:format("~p,~p~n",[Orig,Dists]),
     case lists:keysearch(Node,1,Dists) of
 	{value,{Node,Vars}} ->
 	    {value,{kernel,Env}}=lists:keysearch(kernel,1,Apps),
@@ -29,9 +33,9 @@ ins_dist({Node,Apps}=Orig,Dists) ->
 	    Orig
     end.
 
-mk_rel(_Name,Vsn,{Node,NApps},Apps) ->
+mk_rel(_Name,Vsn,Erts,{Node,NApps},Apps) ->
     {release, 	{Node,Vsn},
-     {erts, "1.2.3"},
+     {erts, Erts},
      [get_app(App,Apps) || App <- NApps]
     }.
 
@@ -56,6 +60,8 @@ merge_envs(Env, Defs) ->
 			end
 		end, Env, Defs).
 
+mk_dists(Nodes,[]) ->
+    [];
 mk_dists(Nodes,Dists) ->
     L=lists:flatten([mk_dist(Dist) || Dist <- Dists]),
     [get_dist_info(Node,L) || {Node,_Apps}<-Nodes].
@@ -83,3 +89,20 @@ uniq(Node,Nodes) ->
     S1=sets:del_element(Node,S),
     sets:to_list(S1).
 
+write_rels(Rels) ->
+    lists:foreach(fun write_rel/1,Rels).
+
+write_rel({release,{Node,Vsn},_Erts,_Apps}=Rel) ->
+    File=Node++"-"++Vsn++".rel",
+    {ok,FD}=file:open(File,[write]),
+    io:format(FD,"~p~n",[Rel]),
+    file:close(FD).
+
+write_configs(Rels) ->
+    lists:foreach(fun write_config/1,Rels).
+
+write_config({Node,Config}) ->
+    File=Node++".config",
+    {ok,FD}=file:open(File,[write]),
+    io:format(FD,"~p~n",[Config]),
+    file:close(FD).

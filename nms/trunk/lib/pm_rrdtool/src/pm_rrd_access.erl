@@ -68,7 +68,7 @@ create(MOI,Store) when is_list(MOI) ->
 
 fetch(MOI,MOC,Counters,CF,Res,Start,Stop) when is_tuple(Start) ->
     {PCs,DCs}=order_counters(MOI,MOC,Counters),
-    DEFs=mk_defs(PCs),
+    DEFs=mk_defs(PCs,CF),
     CDEFs=mk_cdefs(DCs),
     XPORTs=[{Name,Name}||Name <- Counters],
     {DEFs,CDEFs},
@@ -158,8 +158,8 @@ add_counter1(MOI,MOC,{d_counter,Cnt,Expr,Deps,_File},{_PCs,DCs}=Acc) ->
     end.
 
 
-mk_defs(PCs) ->
-    [{Name,File,Name,'AVERAGE'} || {Name,File} <- PCs].
+mk_defs(PCs,CF) ->
+    [{Name,File,Name,CF} || {Name,File} <- PCs].
 mk_cdefs(DCs) ->
     DCs.
 

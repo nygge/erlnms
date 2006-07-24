@@ -33,14 +33,27 @@
 %% External functions
 %%====================================================================
 %%--------------------------------------------------------------------
-%% Function: start_link/0
-%% Description: Starts the server
+%% @spec start_link() -> {ok,Pid}
+%% @doc Starts the locking server.
+%% @end
 %%--------------------------------------------------------------------
 start_link() ->
     gen_server:start_link({local, ?SERVER}, ?MODULE, [], []).
 
+%% @spec lock(Id,Type,Resources) -> ok
+%% Id = term()
+%% Type = write|read
+%% Resources = [Resource]
+%% Resource = string()
+%% @doc Locks Resources for user Id. 
+%% @end
 lock(Id,Type,Resources) when Type==write;Type==read ->
     gen_server:cast(?SERVER,{lock,self(),Id,Type,Resources}).
+
+%% @spec release(Id) -> ok
+%% Id = term()
+%% @doc Releases all Resources locked by user Id. 
+%% @end
 
 release(Id) ->
     gen_server:cast(?SERVER,{release,self(),Id}).

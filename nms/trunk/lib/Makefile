@@ -1,13 +1,15 @@
 LIBS := \
+	utils \
+	rrdtool \
+	pm_basic \
+	pm_rrdtool \
+	threshold \
 	fm_basic \
 	fm_clients \
 	nls \
-	pm_basic \
-	pm_rrdtool \
+	rate \
+	nms \
 	reltool \
-	rrdtool \
-	threshold \
-	utils
 #	pm_rdbms \
 
 all: $(LIBS)

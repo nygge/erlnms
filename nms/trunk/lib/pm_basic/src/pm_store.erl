@@ -5,7 +5,7 @@
 %%% @author Anders Nygren <anders.nygren@gmail.com>
 %%% @doc pm_store provides the main interface to the performance data
 %%% storage. The real work is being done by the database backends.
-%%%
+%%% @end
 %%%-------------------------------------------------------------------
 -module(pm_store).
 

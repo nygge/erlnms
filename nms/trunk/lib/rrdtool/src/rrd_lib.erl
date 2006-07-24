@@ -237,6 +237,8 @@
 	 update/3,update/4,
 	 xport/2 
 	]).
+
+-include("rrdtool.hrl").
  
 %%====================================================================
 %% External functions

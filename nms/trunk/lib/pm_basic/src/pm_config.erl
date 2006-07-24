@@ -101,8 +101,6 @@ get_db_backend_cb(Backend) ->
 get_db_backend(MOI,MOC) ->
     gen_server:call(?SERVER,{get_db_backend,MOI,MOC},infinity).
 
-
-<<<<<<< .mine
 %% Db_Backend
 %% @spec new_db_backend(DB_Backend::db_backend()) -> ok
 %% @doc Add a new database backend.
