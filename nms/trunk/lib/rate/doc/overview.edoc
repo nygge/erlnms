@@ -1,0 +1,15 @@
+@author Anders Nygren <anders.nygren@gmail.com>
+@copyright 2006 Anders Nygren
+@version {@vsn}
+@title Rating
+@doc
+
+== Introduction ==
+The Rating application currently contains some modules with
+functions for rating.
+
+These include
+<ul>
+  <li>Daytype</li>
+  <li>Prefix</li>
+</ul>

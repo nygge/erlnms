@@ -1,0 +1,8 @@
+{application, rate,
+ [{description, "Rating"},
+  {vsn,"%VSN%"},
+  {modules,[%MODULES%]},
+  {applications,[kernel,stdlib]},
+  {included_applications,[]},
+  {mod, {rate_app,[]}}
+ ]}.
