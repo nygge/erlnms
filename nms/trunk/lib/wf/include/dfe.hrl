@@ -1,0 +1,1 @@
+-record(pn_rec,{pre=none,proc,post=none,incount=0,outcount=[],state=[]}).

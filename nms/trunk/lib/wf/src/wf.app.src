@@ -1,0 +1,9 @@
+%% This is an -*- erlang -*- file.
+{application, wf,
+ [{description,"Workflow Manager"},
+  {vsn,"%VSN%"},
+  {modules,[%MODULES%]},
+	    {applications,[kernel,stdlib]},
+	    {mod, {wf_app,[]}},
+	    {env,[]}
+	   ]}.
