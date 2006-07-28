@@ -1,0 +1,9 @@
+%% This is an -*- erlang -*- file.
+{application, fstore,
+ [{description,"File Store"},
+  {vsn,"%VSN%"},
+  {modules,[%MODULES%]},
+	    {applications,[kernel,stdlib]},
+	    %%{mod, {fstore_app,[]}},
+	    {env,[]}
+	   ]}.
