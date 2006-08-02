@@ -1,6 +1,5 @@
 %%%-------------------------------------------------------------------
 %%% @copyright 2006 Anders Nygren
-%%% File    : ast_ami_server_man.erl
 %%% @author Anders Nygren <anders.nygren@gmail.com>
 %%% @doc Asterisk Manager Interface server manager. Manages all 
 %%% instances of ami servers.
@@ -70,7 +69,7 @@ init([]) ->
     {ok, State}.
 
 %%--------------------------------------------------------------------
-%% @spec %% handle_call(Request, From, State) -> {reply, Reply, State} |
+%% @spec handle_call(Request, From, State) -> {reply, Reply, State} |
 %%                                      {reply, Reply, State, Timeout} |
 %%                                      {noreply, State} |
 %%                                      {noreply, State, Timeout} |

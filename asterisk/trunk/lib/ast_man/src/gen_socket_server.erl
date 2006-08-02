@@ -1,8 +1,23 @@
 %%%-------------------------------------------------------------------
 %%% @copyright 2006 Anders Nygren
-%%% File    : gen_socket_server.erl
 %%% @author Anders Nygren <anders.nygren@gmail.com>
 %%% @doc Generic socket server behaviour.
+%%% Provides a socket server behaviour with state management according to
+%%% ITU-T X.731.
+%%%
+%%% The callback module must implement the following functions.
+%%% 
+%%% init/2,
+%%% 
+%%% handle_data/2,
+%%% 
+%%% handle_closed/1,
+%%% 
+%%% handle_info/2,
+%%% 
+%%% handle_error/2,
+%%% 
+%%% terminate/2
 %%% @end 
 %%% Created :  2 Apr 2006 by Anders Nygren <anders.nygren@gmail.com>
 %%%-------------------------------------------------------------------
@@ -52,27 +67,29 @@
 %% API
 %%====================================================================
 %%--------------------------------------------------------------------
-%% @spec start_link(Port::integer()) -> {ok,Pid} | ignore | {error,Error}
+%% @spec start_link(CBMod::atom(),CBPars::atom(),Port::integer()) -> {ok,Pid} | ignore | {error,Error}
 %% @doc  Starts the server. Listening on port Port.
 %% @end
 %%--------------------------------------------------------------------
 start_link(CBMod,CBPars,Port) ->
-    start_link(?MODULE, CBMod, CBPars, Port).
+    start_link({local,?MODULE}, CBMod, CBPars, Port).
 
 %%--------------------------------------------------------------------
-%% @spec start_link(Name::atom(),Port::integer()) -> {ok,Pid} | ignore | 
-%%                                                   {error,Error}
+%% @spec start_link(RName::Name,CBMod::atom(),CBPars::atom(),Port::integer()) -> 
+%%              {ok,Pid} | ignore | {error,Error}
+%% Name = {Type,atom()}
+%% Type = local|global
 %% @doc  Starts the server. 
 %% The server will register with name {local,Name}.
 %% Listening on port Port.
 %% @end
 %%--------------------------------------------------------------------
-start_link(Name,CBMod,CBPars,Port) ->
+start_link({Type,Name},CBMod,CBPars,Port) when Type==local;Type==global->
     start_link(Name,CBMod,CBPars,Port,[]).
 
 %%--------------------------------------------------------------------
-%% @spec start_link(Name::atom(),Port::integer(),Opts::list()) -> {ok,Pid} | ignore | 
-%%                                                   {error,Error}
+%% @spec start_link(Name::atom(),CBMod::atom(),CBPars::atom(),Port::integer(),Opts::list()) -> 
+%% {ok,Pid} | ignore | {error,Error}
 %% @doc  Starts the server. 
 %% The server will register with name {local,Name}.
 %% Listening on port Port. Options Opts.
@@ -82,31 +99,60 @@ start_link(Name,CBMod,CBPars,Port,Opts) when is_list(Opts) ->
     gen_server:start_link({local, Name}, ?MODULE, 
 			  [CBMod,CBPars,Port,Opts], []).
 
+%%--------------------------------------------------------------------
+%% @spec get_adm_state(Server) -> locked|unlocked|shutting_down
+%% @doc Get the administrative state of the server.
+%% @end
+%%--------------------------------------------------------------------
 get_adm_state(Server) ->
     gen_server:call(Server,get_adm_state).
 
+%%--------------------------------------------------------------------
+%% @spec set_adm_state(Server::atom(),State) -> Result 
+%% State =lock|unlock
+%% @doc Set the administrative state of the server.
+%% @end
+%%--------------------------------------------------------------------
 set_adm_state(Server,State) when State==lock;State==unlock ->
     gen_server:call(Server,{set_adm_state,State}).
 
+%%--------------------------------------------------------------------
+%% @spec get_op_state(Server) -> enabled|{disabled,Reason}
+%% @doc Get the operational state of the server.
+%% @end
+%%--------------------------------------------------------------------
 get_op_state(Server) ->
     gen_server:call(Server,get_op_state).
 
+%%--------------------------------------------------------------------
+%% @spec get_stats(Server) -> Statistics
+%% @doc Get the statistics of the server
+%% @end
+%%--------------------------------------------------------------------
 get_stats(Server) ->
     gen_server:call(Server,get_stats).
 
+%%--------------------------------------------------------------------
+%% @spec get_usage_state(Server) -> active|busy|idle
+%% @doc Get the usage state of the server.
+%% @end
+%%--------------------------------------------------------------------
 get_usage_state(Server) ->
     gen_server:call(Server,get_usage_state).
 
+%%--------------------------------------------------------------------
 %% @spec send(Server,Data) -> ok | {error,Reason}
 %% @doc Send message to connection client. This function should only be used by 
 %% a callback module to send a message to its peer.
 %% @end
+%%--------------------------------------------------------------------
 send(Conn,Data) ->
     gen_tcp:send(Conn#connection.sock,Data).
 
 %%====================================================================
 %% behaviour callbacks
 %%====================================================================
+%% @private
 behavior_info(callbacks) ->
     [{init,2},{handle_data,2},{handle_closed,1},
      {handle_info,2},{handle_error,2},{terminate,2}];
@@ -124,6 +170,7 @@ behavior_info(_Other) ->
 %%                         {stop, Reason}
 %% @doc  Initiates the server.
 %% @end
+%% @private
 %%--------------------------------------------------------------------
 init([CBMod,CBPars,Port,Opts]) ->
     process_flag(trap_exit, true),
@@ -149,6 +196,7 @@ init([CBMod,CBPars,Port,Opts]) ->
 %%                                      {stop, Reason, State}
 %% @doc  Handling call messages
 %% @end
+%% @private
 %%--------------------------------------------------------------------
 handle_call(get_adm_state, _From, State) ->
     Reply = State#state.adm_state,
@@ -217,6 +265,7 @@ handle_call(_Req, _From, State) ->
 %%                                      {stop, Reason, State}
 %% @doc  Handling cast messages
 %% @end
+%% @private
 %%--------------------------------------------------------------------
 handle_cast(_Msg, State) ->
     {noreply, State}.
@@ -227,8 +276,8 @@ handle_cast(_Msg, State) ->
 %%                                       {stop, Reason, State}
 %% @doc  Handling all non call/cast messages
 %% @end
-%%--------------------------------------------------------------------
 %% @private
+%%--------------------------------------------------------------------
 handle_info({connected,Pid}, State) ->
     S1=start_link_listener(State),
     Cons=S1#state.connections,
@@ -294,6 +343,7 @@ handle_info(_Info, State) ->
 %% cleaning up. When it returns, the gen_server terminates with Reason.
 %% The return value is ignored.
 %% @end
+%% @private
 %%--------------------------------------------------------------------
 terminate(_Reason, _State) ->
     ok.
@@ -302,6 +352,7 @@ terminate(_Reason, _State) ->
 %% Func: code_change(OldVsn, State, Extra) -> {ok, NewState}
 %% @doc  Convert process state when code is changed
 %% @end
+%% @private
 %%--------------------------------------------------------------------
 code_change(_OldVsn, State, _Extra) ->
     {ok, State}.
@@ -329,6 +380,7 @@ start_link_listener(State) ->
 			      self(), State#state.sock}]),
     State#state{listener=Pid,op_state=enabled}.
 
+%% @private
 listener_init({CBMod,CBPars, Pid, LSocket}) ->
     case catch gen_tcp:accept(LSocket) of
 	{ok, Socket} ->

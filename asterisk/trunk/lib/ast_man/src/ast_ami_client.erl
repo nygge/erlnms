@@ -44,10 +44,11 @@
 
 
 %%%-------------------------------------------------------------------
-%%% File    : ast_manager.erl
-%%% Author  : anders <anders@>
-%%% Description : 
-%%%
+%%% @copyright 2006 Anders Nygren
+%%% File    : ast_ami_client.erl
+%%% @author anders <anders.nygren@gmail.com>
+%%% @doc
+%%% @end
 %%% Created : 20 Feb 2006 by anders <anders@>
 %%%-------------------------------------------------------------------
 -module(ast_ami_client).
