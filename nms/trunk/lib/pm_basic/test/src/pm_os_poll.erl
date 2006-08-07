@@ -20,7 +20,7 @@
 	 create_store_inst/0,
 	 create_store_type/0,
 	 graph/0,
-	 xport/0
+	 fetch/0
 	]).
 
 %% gen_server callbacks
@@ -99,8 +99,8 @@ create_store_inst() ->
 graph()->
     gen_server:call(?MODULE,graph).
 
-xport() ->
-    gen_server:call(?MODULE,export).
+fetch() ->
+    gen_server:call(?MODULE,fetch).
 
 %%====================================================================
 %% gen_server callbacks
@@ -129,48 +129,10 @@ init([]) ->
 %%--------------------------------------------------------------------
 
 handle_call(fetch, _From, State) ->
-    pm_basic:fetch([{ne,"godot"},{cpu,1}],load_avg,'LAST',sec30,10,
-%% handle_call(export, _From, State) ->
-%%     DEFs=[#rrd_def{vname=avg1,
-%%  		   rrd=State#state.file,
-%%  		   ds_name=avg1,
-%%  		   cf='LAST'},
-%%  	  #rrd_def{vname=avg5,
-%%  		   rrd=State#state.file,
-%%  		   ds_name=avg5,
-%%  		   cf='LAST'},
-%%  	  #rrd_def{vname=avg15,
-%%  		   rrd=State#state.file,
-%%  		   ds_name=avg15,
-%%  		   cf='LAST'}],
-%%     XPORTs=[#rrd_xport{vname=avg1,
-%%  		       legend=avg1},
-%%  	    #rrd_xport{vname=avg5,
-%%  		       legend=avg5},
-%%  	    #rrd_xport{vname=avg15,
-%%  		       legend=avg15}],
-%%     Now=erlang:universaltime(),
-%%     Start=time:time_calc(Now,{min,-5}),
-%%     XPORT=#rrd_export{start=Start,   % Start time
-%%  		      stop=Now,      % End time
-%%  		      rows=120,       % Max number of rows
-%%  		      step={sec,5},  % Data point step
-%%  		      defs=DEFs,     % [rrd_def]
-%%  		      cdefs=[],      % [rrd_cdef]
-%%  		      xports=XPORTs  % [rrd_xport]
-%%  		     },
+    Reply=pm_basic:fetch([{ne,"godot"},{cpu,1}],load_avg,[avg1,avg5,avg15],
+			 'LAST',{sec,30},10,calendar:universal_time()),
+    {reply, Reply, State};
 
-    %% -record(rrd_cdef,{vname,     % Variable name
-    %% 		  rpn        % RPN expression
-    %% 		 }).
-
-    %% -record(rrd_vdef,{vname,     % Variable name
-    %% 		  rpn        % RPN expression
-    %% 		 }).
-
-%%     Reply=rrd_lib:xport(State#state.port,XPORT),
-%%     Reply=ok,
-%%     {reply, Reply, State};
 
 handle_call(graph, _From, State) ->
     %%     Now=erlang:universaltime(),
