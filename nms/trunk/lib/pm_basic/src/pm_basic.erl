@@ -48,7 +48,8 @@
 	 get_all_events/0,delete_event/1
 	]).
 
--export([create/3,
+-export([start/0,stop/0,
+	 create/3,
 	 fetch/5,
 	 fetch/7,
 	 update/4]).
@@ -58,6 +59,19 @@
 %%====================================================================
 %% API
 %%====================================================================
+
+%% @spec start() -> ok
+%% @doc Start the application.
+%% @end
+start() ->
+    application:start(?MODULE).
+
+%% @spec stop() -> ok
+%% @doc Stop the application.
+%% @end
+stop() ->
+    application:stop(?MODULE).
+
 %% @spec get_counter_def(MOI::fdn(),MOC::atom(),Counter::atom()) -> pm_counter()
 %% @doc Get the definition of a counter.
 %% @end
