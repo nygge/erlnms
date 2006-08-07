@@ -25,8 +25,7 @@ init(#new_pm_data{moi=MOI,moc=MOC,int=Step,time=Time}) ->
     case threshold_conf:get_cmds(ws,MOI,MOC,Step) of
 	Cmds when is_record(Cmds,th_cmd) ->
 	    Cs=[C||{C,_}<-Cmds#th_cmd.cmds],
-	    {Meta,Res}=pm_store_access:fetch(MOI,MOC,Cs,'AVERAGE',Step,
-					     2,Time),
+	    {Meta,Res}=pm_store:fetch(MOI,MOC,Cs,'AVERAGE',Step,2,Time),
 	    {legends,CNames}=lists:nth(6,Meta),
 	    [{PT,PVals},{CT,CVals}]=Res,
 	    Trends=trends(PVals,CVals),

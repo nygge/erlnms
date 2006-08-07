@@ -2,6 +2,6 @@
  [{description, "Threshold"},
   {vsn,"%VSN%"},
   {modules,[%MODULES%]},
-  {applications,[kernel,stdlib,mnesia,rrdtool,pm_basic]},
-  {mod, {threshold,[]}}
+  {applications,[kernel,stdlib,mnesia,pm_basic]},
+  {mod, {threshold_app,[]}}
  ]}.

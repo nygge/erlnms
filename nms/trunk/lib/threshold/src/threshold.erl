@@ -4,7 +4,10 @@
 %%% @copyright 2004-2006 Anders Nygren
 %%% @version {@vsn}
 %%% @author Anders Nygren <anders.nygren@gmail.com>
-%%% @doc Threshold server.
+%%% @doc Threshold server. The Threshold server subscribes to 
+%%% new_pm_data events. For each event received it spawns a 
+%%% threshold_worker process that does the actual work.
+%%% When a threshold is crossed a threshold crossing event is generated.
 %%% @end
 %%%-------------------------------------------------------------------
 -module(threshold).
@@ -17,7 +20,7 @@
 -include_lib("stdlib/include/ms_transform.hrl").
 %%--------------------------------------------------------------------
 %% External exports
--export([start_link/0,start/0,start/2]).
+-export([start_link/0]).
 
 %% gen_server callbacks
 -export([init/1, handle_call/3, handle_cast/2, handle_info/2, 
@@ -28,12 +31,6 @@
 %%====================================================================
 %% External functions
 %%====================================================================
-start() ->
-    application:start(?MODULE).
-
-start(Type, StartArgs) ->
-    supervisor:start_link({local,sup_threshold},sup_threshold,[]).
-
 %%--------------------------------------------------------------------
 %% Function: start_link/0
 %% Description: Starts the server
