@@ -4,5 +4,5 @@
   {modules,[%MODULES%]},
   {applications,[kernel,stdlib,mnesia,rrdtool]},
   {included_applications,[pm_rrdtool]},
-  {mod, {pm_basic,[]}}
+  {mod, {pm_basic_app,[]}}
  ]}.

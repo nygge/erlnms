@@ -1,81 +1,53 @@
+%% @type cf() = min|max|last|average.
+%% Consolidation function.
+
 %%------------------------------------------------------------
-%% name   = atom
-%% module = atom
+%% @type pm_db_backend() = #pm_db_backend{name=atom(), module=atom()}.
 
 -record(pm_db_backend,{name,module}).
 
 %%------------------------------------------------------------
-%% name       = {moi,mo_type}
-%% store_type = atom, pm_mes_type,
-%% backend    = atom
-
+%% @type pm_store_inst() = #pm_store_inst{name={Moi::atom(),MO_Type::atom()},store_type=PM_mes_type::atom(),backend=atom()}.
+%% MOI is FDN.
 -record(pm_store_inst,{name,store_type,backend}).
 
 %%------------------------------------------------------------
-%% name          = atom, record name
-%% mo_type       = atom, pm_mo_type
-%% archive       = atom, pm_archive
-%% step          = duration_spec
-%% duration_spec = {type,int}
-%% type          = sec|min|hour|day|week|month|year
+%% @type pm_store_type() = #pm_store_type{name=atom(),mo_type=atom(),archive=atom(),step=duration()}.
 
 -record(pm_store_type,{name,mo_type,archive,step}).
 
 %%------------------------------------------------------------
-%% name      = atom, record name
-%% agregates = [atom], names of aggregates
+%% @type pm_archive() = #pm_archive{name=atom(), aggregates=[Aggregate::atom()]}.
 
 -record(pm_archive,{name, aggregates}).
 
 %%------------------------------------------------------------
-%% name          = atom
-%% cf            = min|max|last|average
-%% xff           = float
-%% resolution    = duration_spec|atom
-%% duration      = duration_spec|atom
-%% duration_spec = {type,int}
-%% type          = sec|min|hour|day|week|month|year
+%% @type pm_aggregate() = #pm_aggregate{name=atom(), cf=cf(), xff=float(), resolution=duration()|atom(), duration=duration()|atom()}.
 
 -record(pm_aggregate,{name, cf, xff, resolution, duration}).
 
 %%------------------------------------------------------------
-%% name          = atom, record name
-%% counters      = [atom], names of counters 
-%% der_counters  = [atom], names of derived counters 
+%% @type pm_mo_type() = #pm_mo_type{name=atom(), counters=[Counter::atom()], der_counters=[DCounter::atom()]}.
 
 -record(pm_mo_type,{name, counters, der_counters}).
 
 %%------------------------------------------------------------
-%% name          = atom
-%% type          = gauge|counter|derive|absolute
-%% hb            = duration_spec
-%% duration_spec = {type,int}
-%% type          = sec|min|hour|day|week|month|year
-%% min, max      = none|atom|float|int
+%% @type pm_counter() = #pm_counter{name={MOtype::atom(),Name::atom()}, type=gauge|counter|derive|absolute, hb=duration(), min=none|atom()|float()|int(), max=none|atom()|float()|int()}.
 
 -record(pm_counter, {name, type, hb, min="U", max="U"}).
 
 %%------------------------------------------------------------
-%% name = atom
-%% expr = RPN 
-%% deps = [atom], names of counters
+%% @type pm_der_counter() = #pm_der_counter{name=atom(),expr=string(),deps=[Counter::atom()]}.
 
 -record(pm_der_counter,{name,expr,deps}).
 
 %%------------------------------------------------------------
-%% name          = atom
-%% value         = duration_spec
-%% duration_spec = {type,int}
-%% type          = sec|min|hour|day|week|month|year
+%% @type pm_duration() = #pm_duration{name=atom(),value=duration()}.
 
 -record(pm_duration,{name,value}).
 
 %%------------------------------------------------------------
-%% id       = [RDN], MOI
-%% RDN      = {atom,term}
-%% events   = [Duration]
-%% Duration = {unit,int}
-%% unit     = sec|min|hour|day|week|month|year
+%% @type pm_event() = #pm_event{id=fdn(),events=[duration()]}.
 
 -record(pm_event,{id,events}).
 

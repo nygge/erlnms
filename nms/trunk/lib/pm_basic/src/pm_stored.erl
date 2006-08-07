@@ -119,5 +119,5 @@ connect() ->
     pm_raw_data:subscribe(Filter).
 
 process_data(#pm_rec{moi=MOI,moc=MOC,time=Time,data=Data}) ->
-    {ok,[_TS]}=pm_store:update(MOI,MOC,Time,Data).
+    pm_store:update(MOI,MOC,Time,Data).
 

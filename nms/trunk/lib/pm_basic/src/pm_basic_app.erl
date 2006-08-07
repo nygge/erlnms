@@ -1,12 +1,12 @@
 %%%-------------------------------------------------------------------
-%%% File    : pm_basic.erl
+%%% File    : pm_basic_app.erl
 %%% Author  : Anders Nygren <anders.nygren@gmail.com>
 %%% Description : 
 %%%
 %%% Created : 22 Aug 2003 by Anders Nygren <anders.nygren@gmail.com>
 %%% @private
 %%%-------------------------------------------------------------------
--module(pm_basic).
+-module(pm_basic_app).
 
 -behaviour(application).
 %%--------------------------------------------------------------------
@@ -17,7 +17,6 @@
 %% External exports
 %%--------------------------------------------------------------------
 -export([
-	 start/0,
 	 start/2,
 	 stop/1
         ]).
@@ -39,10 +38,6 @@
 %%====================================================================
 %% External functions
 %%====================================================================
-
-start() ->
-    application:start(?MODULE).
-
 %%--------------------------------------------------------------------
 %% Func: start/2
 %% Returns: {ok, Pid}        |
@@ -50,7 +45,7 @@ start() ->
 %%          {error, Reason}   
 %%--------------------------------------------------------------------
 start(Type, StartArgs) ->
-    case supervisor:start_link({local,sup_pm_basic},sup_pm_basic,[]) of
+    case sup_pm_basic:start_link() of
 	{ok, Pid} -> 
 	    {ok, Pid};
 	Error ->

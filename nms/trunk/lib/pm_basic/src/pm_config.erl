@@ -13,6 +13,7 @@
 %%--------------------------------------------------------------------
 %% Include files
 %%--------------------------------------------------------------------
+%% @headerfile "pm_store.hrl"
 -include("pm_store.hrl").
 
 -define(SERVER,?MODULE).
@@ -76,13 +77,13 @@ start_link() ->
 start_link(Name) ->
     gen_server:start_link(Name, ?MODULE, [], []).
 
-%% @spec get_counter_def(MOI,MOC,Cnt) -> counter()
+%% @spec get_counter_def(MOI::fdn(),MOC::atom(),Counter::atom()) -> pm_counter()
 %% @doc Get the definition of a counter.
 %% @end
 get_counter_def(MOI,MOC,Cnt) ->
     gen_server:call(?SERVER,{get_counter_def,MOI,MOC,Cnt},infinity).
 
-%% @spec get_counters(MOI::mo_instance(),MOC,CType) -> [counter()]
+%% @spec get_counters(MOI::mo_instance(),MOC::atom(),CType::primary|derived|all) -> [counter()]
 %% @doc Get counters defined for a specific MO.
 %% @end
 get_counters(MOI,MOC,CType) when CType==primary;CType==derived;
@@ -95,7 +96,7 @@ get_counters(MOI,MOC,CType) when CType==primary;CType==derived;
 get_db_backend_cb(Backend) ->
     gen_server:call(?SERVER,{get_db_backend_cb,Backend},infinity).
 
-%% @spec get_db_backend(MOI,MOC) -> atom()
+%% @spec get_db_backend(MOI::fdn(),MOC::atom()) -> atom()
 %% @doc Get the database backend that handles {MOI,MOC}.
 %% @end
 get_db_backend(MOI,MOC) ->
@@ -108,13 +109,13 @@ get_db_backend(MOI,MOC) ->
 new_db_backend(DB_Backend) when is_record(DB_Backend,pm_db_backend) ->
     gen_server:call(?SERVER,{new,DB_Backend},infinity).
 
-%% @spec delete_db_backend(Key) -> ok
+%% @spec delete_db_backend(Key::atom()) -> ok
 %% @doc Delete the definition of database backend Key.
 %% @end
 delete_db_backend(Key) -> 
     gen_server:call(?SERVER,{delete,pm_db_backend,Key},infinity).
 
-%% @spec get_db_backend(Key) -> db_backend()
+%% @spec get_db_backend(Key::atom()) -> db_backend()
 %% @doc Get the definition of database backend Key.
 %% @end
 get_db_backend(Key) ->
@@ -126,12 +127,11 @@ get_db_backend(Key) ->
 get_all_db_backends() ->
     gen_server:call(?SERVER,{get_all,pm_db_backend},infinity).
 
-%% Store_Inst
 %% @spec new_store_inst(StoreInst::pm_store_inst()) -> ok
 %% @doc Add a new store instance.
 %% @end
-new_store_inst(Dur) when is_record(Dur,pm_store_inst) ->
-    gen_server:call(?SERVER,{new,Dur},infinity).
+new_store_inst(StoreInst) when is_record(StoreInst,pm_store_inst) ->
+    gen_server:call(?SERVER,{new,StoreInst},infinity).
 
 %% @spec delete_store_inst(Key::atom()) -> ok
 %% @doc Delete the definition of store instance Key.
@@ -139,7 +139,7 @@ new_store_inst(Dur) when is_record(Dur,pm_store_inst) ->
 delete_store_inst(Key) ->
     gen_server:call(?SERVER,{delete,pm_store_inst,Key},infinity).
 
-%% @spec get_store_inst(Key) -> pm_store_inst()
+%% @spec get_store_inst(Key::atom()) -> pm_store_inst()
 %% @doc Get the definition of store instance Key.
 %% @end
 get_store_inst(Key) ->
@@ -189,7 +189,7 @@ new_archive(Dur) when is_record(Dur,pm_archive) ->
 delete_archive(Key) ->
     gen_server:call(?SERVER,{delete,pm_archive,Key},infinity).
 
-%% @spec get_archive(Key) -> pm_archive()
+%% @spec get_archive(Key::atom()) -> pm_archive()
 %% @doc Get the definition of archive Key.
 %% @end
 get_archive(Key) ->
@@ -208,13 +208,13 @@ get_all_archives() ->
 new_aggregate(Dur) when is_record(Dur,pm_aggregate) ->
     gen_server:call(?SERVER,{new,Dur},infinity).
 
-%% @spec delete_aggregate(Key) -> ok
+%% @spec delete_aggregate(Key::atom()) -> ok
 %% @doc Delete the definition of aggregate Key.
 %% @end
 delete_aggregate(Key) ->
     gen_server:call(?SERVER,{delete,pm_aggregate,Key},infinity).
 
-%% @spec get_aggregate(Key) -> pm_aggregate()
+%% @spec get_aggregate(Key::atom()) -> pm_aggregate()
 %% @doc Get the definition of aggregate Key.
 %% @end
 get_aggregate(Key) ->
@@ -264,7 +264,7 @@ new_counter(Counter) when is_record(Counter,pm_counter) ->
 delete_counter(Key) ->
     gen_server:call(?SERVER,{delete,pm_counter,Key},infinity).
 
-%% @spec get_counter(Key) -> pm_counter()
+%% @spec get_counter(Key::atom()) -> pm_counter()
 %% @doc Get the definition of counter Key.
 %% @end
 get_counter(Key) ->
@@ -283,13 +283,13 @@ get_all_counters() ->
 new_der_counter(DerCounter) ->
     gen_server:call(?SERVER,{new,DerCounter},infinity).
 
-%% @spec delete_der_counter(Key::atom()) -> pm_der_counter()
+%% @spec delete_der_counter(Key::atom()) -> ok
 %% @doc Delete the definition of derived counter Key.
 %% @end
 delete_der_counter(Key) ->
     gen_server:call(?SERVER,{delete,pm_der_counter,Key},infinity).
 
-%% @spec get_der_counter(Key) -> pm_der_counter()
+%% @spec get_der_counter(Key::atom()) -> pm_der_counter()
 %% @doc Get the definition of derived counter Key.
 %% @end
 get_der_counter(Key) ->
@@ -314,7 +314,7 @@ new_duration(Dur) when is_record(Dur,pm_duration) ->
 delete_duration(Key) ->
     gen_server:call(?SERVER,{delete,pm_duration,Key},infinity).
 
-%% @spec get_duration(Key) -> pm_duration()
+%% @spec get_duration(Key::atom()) -> pm_duration()
 %% @doc Get the definition of duration Key.
 %% @end
 get_duration(Key) ->
@@ -333,31 +333,31 @@ get_all_durations() ->
 new_event(Event) when is_record(Event,pm_event) ->
     gen_server:call(?SERVER,{new,Event},infinity).
 
-%% @spec delete_event(Key) -> ok
+%% @spec delete_event(Key::atom()) -> ok
 %% @doc Delete the definition of event Key.
 %% @end
 delete_event(Key) ->
     gen_server:call(?SERVER,{delete,pm_event,Key},infinity).
 
-%% @spec get_event(Key) -> pm_event()
+%% @spec get_event(Key::atom()) -> pm_event()
 %% @doc Get the definition of event Key.
 %% @end
 get_event(Key) ->
     gen_server:call(?SERVER,{get,pm_event,Key},infinity).
 
-%% @spec get_events(MOI,MOC) -> pm_event()
+%% @spec get_events(MOI::fdn(),MOC::atom()) -> pm_event()
 %% @doc Get the definition of all events for a specific measurement object, {MOI,MOC}.
 %% @end
 get_events(MOI,MOC) ->
     gen_server:call(?SERVER,{get_events,MOI,MOC},infinity).
 
-%% @spec get_all_events() -> pm_event()
+%% @spec get_all_events() -> [pm_event()]
 %% @doc Get the definition of all events.
 %% @end
 get_all_events() ->
     gen_server:call(?SERVER,{get_all,pm_event},infinity).
 
-%% @spec get_store_def(Name) -> What
+%% @spec get_store_def(Name::atom()) -> What
 %% @doc Get the definition of store Name.
 %% @end
 get_store_def(Name) ->
@@ -418,13 +418,12 @@ handle_call({get_db_backend_cb,Name}, _From, State) ->
     {reply,Reply,State};
 
 handle_call({get_db_backend,MOI,MOC}, _From, State) ->
-    Reply=case read_tab(pm_store_inst,{MOI,MOC}) of
-	      DB when is_record(DB,pm_store_inst)->
-		  {reply,{found,DB#pm_store_inst.backend},State};
-	      [] ->
-		  {reply,not_found,State}
-	  end,
-    {reply,Reply,State};
+    case read_tab(pm_store_inst,{MOI,MOC}) of
+	DB when is_record(DB,pm_store_inst)->
+	    {reply,{found,DB#pm_store_inst.backend},State};
+	[] ->
+	    {reply,not_found,State}
+    end;
 
 handle_call({get_counter_def,MOI,MOC,Cnt},_From,State) ->
     CD=case read_tab(pm_store_inst,{MOI,MOC}) of

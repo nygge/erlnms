@@ -13,6 +13,7 @@
 %% Include files
 %%--------------------------------------------------------------------
 
+%% @headerfile "pm_store.hrl"
 -include("pm_store.hrl").
 -include("new_pm_data.hrl").
 
@@ -80,9 +81,9 @@ create(MOI,StoreType,BackEnd) when is_list(MOI),
 %% @end
 
 fetch(MOI,MOC,Counters,CF,Res) ->
-    Esecs=utils:datetime_to_epoch(calendar:universal_time()),
-    RSecs=utils:duration_to_seconds(Res),
-    Time=utils:epoch_to_datetime((Esecs div RSecs) * RSecs),
+    Esecs=time:datetime_to_epoch(calendar:universal_time()),
+    RSecs=time:duration_to_seconds(Res),
+    Time=time:epoch_to_datetime((Esecs div RSecs) * RSecs),
     fetch(MOI,MOC,Counters,CF,Res,Time,Time).
 
 %% @spec fetch(MOI,MOC,Counters,CF,Res,From,Stop) -> Result
@@ -107,9 +108,9 @@ fetch(MOI,MOC,Counters,CF,Res) ->
 %% @end
 
 fetch(MOI,MOC,Counters,CF,Res,Rows,Stop) when is_integer(Rows),Rows>0 ->
-    S=utils:datetime_to_epoch(Stop),
-    D=Rows*utils:duration_to_seconds(Res),
-    Start=utils:epoch_to_datetime(S-D),
+    S=time:datetime_to_epoch(Stop),
+    D=Rows*time:duration_to_seconds(Res),
+    Start=time:epoch_to_datetime(S-D),
     fetch(MOI,MOC,Counters,CF,Res,Start,Stop);
 
 %% @spec fetch(MOI,MOC,Counters,CF,Res,Start,Stop) -> Result
@@ -150,7 +151,7 @@ fetch(MOI,MOC,Counters,CF,Res,Start,Stop) when is_tuple(Start) ->
 
 update(MOI,MOC,Time,Data) ->
     case pm_config:get_db_backend(MOI,MOC) of
-	{ok,Module} ->
+	{found,Module} ->
 	    Module:update(MOI,MOC,Time,Data),
 	    case pm_config:get_events(MOI,MOC) of
 		{found,Events,Step} ->
@@ -161,7 +162,7 @@ update(MOI,MOC,Time,Data) ->
 		not_found ->
 		    ignore
 	    end;
-	_ ->
+	_Res ->
 	    {error,no_db_defined}
     end.
 
@@ -170,8 +171,8 @@ update(MOI,MOC,Time,Data) ->
 %%====================================================================
 check_time(TS,EInt,Step) ->
     Secs=calendar:datetime_to_gregorian_seconds(TS),
-    StepSecs=utils:duration_to_seconds(Step),
-    ESecs=utils:duration_to_seconds(EInt),
+    StepSecs=time:duration_to_seconds(Step),
+    ESecs=time:duration_to_seconds(EInt),
     Latest=ESecs*(Secs div ESecs),
     case (Secs-Latest)<StepSecs of
 	true ->
