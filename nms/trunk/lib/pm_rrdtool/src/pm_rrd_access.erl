@@ -70,9 +70,11 @@ fetch(MOI,MOC,Counters,CF,Res,Start,Stop) when is_tuple(Start) ->
     {PCs,DCs}=order_counters(MOI,MOC,Counters),
     DEFs=mk_defs(PCs,CF),
     CDEFs=mk_cdefs(DCs),
-    XPORTs=[{Name,Name}||Name <- Counters],
+    XPORTs=[#rrd_xport{vname=Name,legend=Name}||Name <- Counters],
     {DEFs,CDEFs},
-    rrdtool:xport({[{step,Res},{start,Start},{'end',Stop}],DEFs,CDEFs,XPORTs}).
+    rrdtool:xport(#rrd_export{start=Start,stop=Stop,step=Res,
+			      defs=DEFs,cdefs=CDEFs,xports=XPORTs}).
+%%    rrdtool:xport({[{step,Res},{start,Start},{'end',Stop}],DEFs,CDEFs,XPORTs}).
 
 %% @spec update(MOI,MOC,Time,Data) -> Result
 %% MOI         = [RDN]
@@ -86,7 +88,7 @@ fetch(MOI,MOC,Counters,CF,Res,Start,Stop) when is_tuple(Start) ->
 
 update(MOI,MOC,Time,Data) ->
     {found,File}=pm_rrd_config:id_to_file(MOI,MOC),
-    {found,Counters}=pm_rrd_config:get_counters(MOI,MOC,primary),
+    {found,Counters}=pm_config:get_counters(MOI,MOC,primary),
     TS1=time:datetime_to_epoch(Time),
     {ok,[TS1]}=rrdtool:update(File,Counters,[{TS1,Data}]).
 
@@ -125,41 +127,42 @@ to_string(X) when is_list(X) ->
     X.
 
 order_counters(MOI,MOC,Counters) ->
+    [#pm_rrd_inst{name=_Name,file=File}]=pm_rrd_config:get_store_inst({MOI,MOC}),
     {PCs,DCs}=lists:foldl(fun (Cnt,Acc) ->
-			   add_counter(MOI,MOC,[Cnt],Acc)
+			   add_counter(MOI,MOC,File,[Cnt],Acc)
 		   end,{[],[]},Counters),
     {lists:reverse(PCs),lists:reverse(DCs)}.
 
 % add_counter(MOI,MOC,Counters) ->
 %     add_counter(MOI,MOC,Counters,{[],[]}).
 
-add_counter(MOI,MOC,Counters,Acc) ->
+add_counter(MOI,MOC,File,Counters,Acc) ->
     lists:foldl(fun (C,Acc1) ->
-			add_counter1(MOI,MOC,
-				     pm_rrd_config:get_counter_def(MOI,MOC,C),
+			add_counter1(MOI,MOC,File,
+				     pm_config:get_counter_def(MOI,MOC,C),
 				     Acc1)
 		end,
 		Acc,Counters).
 
-add_counter1(_MOI,_MOC,{counter,Cnt,File},{PCs,DCs}=Acc) ->
+add_counter1(_MOI,_MOC,File,{counter,Cnt},{PCs,DCs}=Acc) ->
     case lists:keymember(Cnt,1,PCs) of
 	true ->
 	    Acc;
 	false ->
 	    {[{Cnt,File}|PCs],DCs}
     end;
-add_counter1(MOI,MOC,{d_counter,Cnt,Expr,Deps,_File},{_PCs,DCs}=Acc) ->
+add_counter1(MOI,MOC,File,{d_counter,Cnt,Expr,Deps},{_PCs,DCs}=Acc) ->
     case lists:keymember(Cnt,1,DCs) of
 	true ->
 	    Acc;
 	false ->
-	    {PCs1,DCs1}=add_counter(MOI,MOC,Deps,Acc),
+	    {PCs1,DCs1}=add_counter(MOI,MOC,File,Deps,Acc),
 	    {PCs1,[{Cnt,Expr}|DCs1]}
     end.
 
 
 mk_defs(PCs,CF) ->
-    [{Name,File,Name,CF} || {Name,File} <- PCs].
+    [#rrd_def{vname=Name,rrd=File,ds_name=Name,cf=CF} || {Name,File} <- PCs].
 mk_cdefs(DCs) ->
     DCs.
 

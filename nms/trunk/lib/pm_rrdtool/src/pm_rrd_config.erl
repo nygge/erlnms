@@ -112,7 +112,7 @@ handle_call({get_all,Tab}, _From, State) ->
 
 handle_call({id_to_file,MOI,MeasType}, _From, State) ->
     case read_tab(pm_rrd_inst,{MOI,MeasType}) of
-	#pm_rrd_inst{name=_Name,file=File} ->
+	[#pm_rrd_inst{name=_Name,file=File}] ->
 	    {reply,{found,File},State};
 	_Other ->
 	    {reply,not_found,State}
@@ -122,8 +122,7 @@ handle_call({file_to_id,_File}, _From, State) ->
     Reply = ok,
     {reply, Reply, State};
 
-handle_call(Any, _From, State) ->
-io:format("Any ~p~n",[Any]),
+handle_call(_Any, _From, State) ->
     Reply = ok,
     {reply, Reply, State}.
 
