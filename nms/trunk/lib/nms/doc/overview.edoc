@@ -34,7 +34,7 @@ The system currently contains the following components
   <li>Performance Management</li>
   <ul>
     <li>{@link //pm_basic. PM Core}</li>
-    <li>{@link //pm_rrdtool. RRDtool databse backend}</li>
+    <li>{@link //pm_rrdtool. RRDtool database backend}</li>
     <li>{@link //threshold. Threshold monitoring}</li>
   </ul>
 </ul>
