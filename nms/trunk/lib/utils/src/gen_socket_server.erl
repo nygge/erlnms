@@ -29,7 +29,7 @@
 %% gen_socket_server internal callbacks
 -export([listener_init/1]).
 
--export([behavior_info/1]).
+%-export([behavior_info/1]).
 
 -include("gen_socket_server.hrl").
 
