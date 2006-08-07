@@ -11,208 +11,11 @@
 %%% <a href="http://somelink.com.ch">RRDTool documentation</a></p>
 %%%
 %%% @end
-%%% @type cf() = 'AVERAGE' | 'MIN' | 'MAX' | 'LAST'. 
-%%% Consolidation function, defines how datapoints are consolidated into a new datapoint with a longer time interval.
-%%%
-%%% @type ds_type() = 'GAUGE' | 'COUNTER' | 'DERIVE' | 'ABSOLUTE'.
-%%% Type of data source.
-%%%
-%%% %@type duration() = {unit(),integer()}. 
-%%% %Denotes a time interval.
 %%%
 %%% @type heartbeat() = //utils/time:duration().
 %%% Max number of seconds between two updates.
 %%%
-%%% options() = [option()].
-%%% option()  = {start,T} | {'end',T} | {x_grid,P} | {y_grid,P} | 
-%%%             alt_y_grid | alt_y_mrtg | alt_autoscale | 
-%%%             alt_autoscale_max | {units_exponent,V} | 
-%%%             {vertical_label,V} | {width,W} | {height,H} | 
-%%%             interlaced | {imginfo,F} | {imgformat,F} | {background,V} | 
-%%%             {overlay,V} | {unit,V} | lazy | {upper_limit,V} |
-%%%             {lowerlimit,V} | rigid | {base,V} | logarithmic | {color,V} | 
-%%%             no_legend | {title,T} | {step,V}.
 %%%
-%%% @type rrd_ds_type() = rrd_ds()|rrd_ds_comp().
-%%% Datasource type.
-%%%
-%%% @type rrd_ds() = Record.
-%%% <pre>
-%%% -record(rrd_ds,{name::string(),
-%%%                 type::ds_type(),
-%%%                 hb::heartbeat(),
-%%%                 min::number(),
-%%%                 max::number()}).
-%%% </pre>
-%%% A normal datasource.
-%%%
-%%% @type rrd_ds_comp() = Record.
-%%% <pre>
-%%% -record(rrd_ds_comp,{name::string(),
-%%%                      rpn::string()}).
-%%% </pre>
-%%% A computed datasource.
-%%%
-%%% @type rrd_export() = Record.
-%%% <pre>
-%%% -record(rrd_export,{start:://utils/time:datetime(),
-%%%                     stop:://utils/time:datetime(),
-%%%                     rows::integer,
-%%%                     step:://utils/time:duration(),
-%%%                     defs::[rrd_def()],
-%%%                     cdefs::[rrd_cdef()],
-%%%                     exports::[rrd_xport()]}).
-%%% </pre>
-%%% 
-%%% @type rrd_file()=Record.
-%%% <pre>
-%%% -record(rrd_file,{file::string(),
-%%%                   start:://utils/time:duration(),
-%%%                   step:://utils/time:duration(),
-%%%                   dss::[rrd_ds_type()],
-%%%                   rras[rrd_rra_type()]}).
-%%% </pre>
-%%% Defines a rrdfile.
-%%%
-%%% @type rrd_graph() = Record.
-%%% <pre>
-%%% -record(rrd_graph,{file::string(),
-%%%                    start:://utils/time:datetime(),
-%%%                    stop:://utils/time:datetime(),
-%%%                    step:://utils/time:duration(),
-%%%                    defs::[rrd_def()],
-%%%                    cdefs::[rrd_cdef()],
-%%%                    vdefs::[rrd_vdef()],
-%%%                    graph::[graph_opt()],
-%%%                    options::[option()]}).
-%%% </pre>
-%%%
-%%% @type graph_opt() = rrd_print()|rrd_gprint()|rrd_comment()|rrd_vrule()|rrd_line()|rrd_area()|rrd_tick()|rrd_shift()
-%%% @type rrd_print() = Record.
-%%% <pre>
-%%% -record(rrd_print,{vname::string(),format::string()}).
-%%% </pre>
-%%% 
-%%% @type rrd_gprint()  = Record.
-%%% <pre>
-%%% -record(rrd_gprint,{vname::string(),format::format()}).
-%%% </pre>
-%%% 
-%%% @type rrd_comment()  = Record.
-%%% <pre>
-%%% -record(rrd_comment,{text::string()}).
-%%% </pre>
-%%% 
-%%% @type rrd_vrule() = Record.
-%%% <pre>
-%%% -record(rrd_vrule,{time,color,legend}).
-%%% </pre>
-%%% 
-%%% @type rrd_line() = Record.
-%%% <pre>
-%%% -record(rrd_line,{width,vname,color,legend,stack}).
-%%% </pre>
-%%% 
-%%% @type rrd_area()  = Record.
-%%% <pre>
-%%% -record(rrd_area,{vname,color,legend,stack}).
-%%% </pre>
-%%% 
-%%% @type rrd_tick()  = Record.
-%%% <pre>
-%%% -record(rrd_tick,{vname,rrggbb,aa,fraction,legend}).
-%%% </pre>
-%%% @type rrd_shift()  = Record.
-%%% <pre>
-%%% -record(rrd_shift,{vname,offset}).
-%%% </pre>
-
-%%% @type rrd_rra_type() = rrd_rra()|rrd_rra_hwpred()|rrd_rra_seasonal()|rrd_rra_devseason()|rrd_rra_devpredict()|rrd_rra_failures().
-%%% RRA type.
-%%%
-%%% @type rrd_rra() = Record.
-%%% <pre>
-%%% -record(rrd_rra,{id::string(),
-%%%                  cf::cf(),
-%%%                  xff::xff(),
-%%%                  interval::interval(),
-%%%                  duration:://utils/time:duration()}).
-%%% </pre>
-%%% Normal RRA.
-%%%
-%%% @type rrd_rra_hwpred() = Record.
-%%% <pre>
-%%% -record(rrd_rra_hwpred,{id::string(),
-%%%                         rows::integer(),
-%%%                         alpha::number(),
-%%%                         beta::number(),
-%%%                         period:://utils/time:duration(),
-%%%                         rra_num::integer()}).
-%%% </pre>
-%%%
-%%% @type rrd_rra_seasonal() = Record.
-%%% <pre>
-%%% -record(rrd_rra_seasonal,{id::string(),
-%%%                           period::number(),
-%%%                           gamma::number(),
-%%%                           rra_num::integer()}).
-%%% </pre>
-%%%
-%%% @type rrd_rra_devseason() = Record.
-%%% <pre>
-%%% -record(rrd_rra_devseason,{id::string(),
-%%%                            period::number(),
-%%%                            gamma::number(),
-%%%                            rra_num::integer()}).
-%%% </pre>
-%%%
-%%% @type rrd_rra_devpredict() = Record.
-%%% <pre>
-%%% -record(rrd_rra_devpredict,{id::string(),
-%%%                             rows::integer(),
-%%%                             rra_num::integer()}).
-%%% </pre>
-%%%
-%%% @type rrd_rra_failures() = Record.
-%%% <pre>
-%%% -record(rrd_rra_failures,{id::string(),
-%%%                           rows::integer(),
-%%%                           threshold::number(),
-%%%                           window::number(),
-%%%                           rra_num::integer()}).
-%%% </pre>
-%%%
-%%% @type rrd_def() = Record.
-%%% <pre>
-%%% -record(rrd_def,{vname::string(),      % Variable name
-%%%  		     rrd::string(),        % RRD filename
-%%%		     ds_name::string(),    % Datasource name
-%%%		     cf::cf()              % Consolidation functions
-%%%	    }).
-%%% </pre>
-%%%
-%%% @type rrd_cdef() = Record.
-%%% <pre>
-%%% -record(rrd_cdef,{vname::string(),     % Variable name
-%%%		      rpn::string()        % RPN expression
-%%%	   }).
-%%% </pre>
-%%%
-%%% @type rrd_vdef() = Record.
-%%% <pre>
-%%% -record(rrd_vdef,{vname::string(),     % Variable name
-%%%		      rpn::string()        % RPN expression
-%%%		 }).
-%%% </pre>
-%%%
-%%% @type rrd_xport() = Record.
-%%% <pre>
-%%% -record(rrd_xport,{vname::string(),    % Variable name
-%%%		       legend::string()    % Exported name
-%%%		  }).
-%%% </pre>
-%%%
-%%% @type unit() = sec|min|hour|day|week|month|year.
 %%% @end
 %%% Created : 26 Aug 2003 by Anders Nygren <anders.nygren@gmail.com>
 %%%-------------------------------------------------------------------
@@ -238,6 +41,7 @@
 	 xport/2 
 	]).
 
+%% @headerfile "rrdtool.hrl"
 -include("rrdtool.hrl").
  
 %%====================================================================
@@ -251,8 +55,8 @@
 %%
 %%
 open() ->
-    Cmd="/usr/pkg/bin/rrdtool -",
-%%    Cmd="/usr/bin/rrdtool -",
+%%    Cmd="/usr/pkg/bin/rrdtool -",
+    Cmd="/usr/bin/rrdtool -",
     case catch open_port({spawn,Cmd},[stream]) of
 	Port when is_port(Port) ->
 	    %%process_flag(trap_exit, true),		  
@@ -465,7 +269,7 @@ done("ERROR:"++_More) ->
 done(S) ->
     case string:str(S,"\nOK") of
 	0 -> false;
-	N -> true
+	_N -> true
     end.
 
 parse_resp("ERROR: "++More) ->

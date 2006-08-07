@@ -22,7 +22,7 @@
 %%	 dump/1,
 	 fetch/3,
 	 fetch/5,
-	 graph/2,
+	 graph/1,
 	 info/1,info/2,info/3,
 	 last/1,
 	 restore/2,restore/3,
@@ -37,6 +37,7 @@
 -export([init/1, handle_call/3, handle_cast/2, handle_info/2, 
 	 terminate/2, code_change/3]).
 
+%% @headerfile "rrdtool.hrl"
 -include("rrdtool.hrl").
 
 -record(state, {locking,waiting,working,work}).
@@ -134,7 +135,7 @@ fetch(File,CF,Res) ->
 fetch(File,CF,Res,Start,Stop) ->
     gen_server:call(?MODULE,{cmd,fetch,{File,CF,Res,Start,Stop}}).
 
-%% @spec graph(File::string(),Pars::rrd_lib:rrd_graph()) -> Result
+%% @spec graph(Pars::rrd_lib:rrd_graph()) -> Result
 %%
 %% Result = {ok, nothing} | {error, Reason}
 %%
@@ -144,8 +145,8 @@ fetch(File,CF,Res,Start,Stop) ->
 %% RRDTool <a href="http://......">documentation</a>.</p>
 %% @see rrd_lib:graph/3
 
-graph(File,Pars) ->
-    gen_server:call(?MODULE,{cmd,graph,{File,Pars}}).
+graph(Graph) when is_record(Graph,rrd_graph) ->
+    gen_server:call(?MODULE,{cmd,graph,Graph}).
 
 %% @spec info(File) -> Result
 %% File      = string()
@@ -480,9 +481,8 @@ find_lock(create,RRDSpec) ->
     {write,[RRDSpec#rrd_file.file]};
 find_lock(fetch,{File,_CF,_Res,_Start,_Stop}) ->
     {read,[File]};
-find_lock(graph,{_File,Pars}) ->
-    {value,DEFs}=lists:keysearch(def,1,Pars),
-    Files=[RRD||{_VName,RRD,_DSName,_CF}<-DEFs],
+find_lock(graph,#rrd_graph{defs=Defs}) ->
+    Files=[Def#rrd_def.rrd||Def<-Defs],
     {read,lists:usort(Files)};
 find_lock(info,{File,_Type}) ->
     {read,[File]};
@@ -492,8 +492,8 @@ find_lock(restore,{_FromFile,ToFile}) ->
     {write,[ToFile]};
 find_lock(update,{File,_Template,_Values}) ->
     {write,[File]};
-find_lock(xport,{_Flags,DEFs,_CDEFs,_XPORTs}) ->
-    Files=[RRD||{_VName,RRD,_DSName,_CF}<-DEFs],
+find_lock(xport,#rrd_export{defs=DEFs}) ->
+    Files=[Def#rrd_def.rrd||Def<-DEFs],
     {read,lists:usort(Files)}.
 
 new_work(Id,CMD,State=#state{locking=_L,waiting=[],working=_W,work=Wqueue})->

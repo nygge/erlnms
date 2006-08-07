@@ -189,15 +189,15 @@ g_to_bin(#rrd_print{vname=VName,format=Format})->
 g_to_bin(#rrd_shift{vname=V,offset=Off}) ->
     rrd_lib_utils:vals_to_binary(["SHIFT",V,Off],":");
 
-g_to_bin(#rrd_tick{vname=V,rrggbb=RGB,aa=_AA,fraction=undefined,legend=_L}) ->
+g_to_bin(#rrd_tick{vname=V,color=RGB,aa=_AA,fraction=undefined,legend=_L}) ->
     VC1=concat_color(V,RGB),
     rrd_lib_utils:vals_to_binary(["TICK",VC1],":");
 
-g_to_bin(#rrd_tick{vname=V,rrggbb=RGB,aa=_AA,fraction=F,legend=undefined}) ->
+g_to_bin(#rrd_tick{vname=V,color=RGB,aa=_AA,fraction=F,legend=undefined}) ->
     VC1=concat_color(V,RGB),
     rrd_lib_utils:vals_to_binary(["TICK",VC1,F],":");
 
-g_to_bin(#rrd_tick{vname=V,rrggbb=RGB,aa=_AA,fraction=F,legend=L}) ->
+g_to_bin(#rrd_tick{vname=V,color=RGB,aa=_AA,fraction=F,legend=L}) ->
     VC1=concat_color(V,RGB),
     rrd_lib_utils:vals_to_binary(["TICK",VC1,F,L],":");
 
