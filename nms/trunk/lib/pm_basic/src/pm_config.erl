@@ -468,7 +468,7 @@ handle_call({get_counters,MOI,MOC,CType}, _From, State) ->
     end;
 
 handle_call({get_events,MOI,MOC}, _From, State) ->
-    case read_tab(pm_event,MOI) of
+    case read_tab(pm_event,{MOI,MOC}) of
 	Es when is_record(Es,pm_event) ->
 	    case read_tab(pm_store_inst,{MOI,MOC}) of
 		Rec when is_record(Rec,pm_store_inst) ->

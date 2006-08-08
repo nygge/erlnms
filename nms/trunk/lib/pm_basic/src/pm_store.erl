@@ -155,7 +155,8 @@ update(MOI,MOC,Time,Data) ->
 	    Module:update(MOI,MOC,Time,Data),
 	    case pm_config:get_events(MOI,MOC) of
 		{found,Events,Step} ->
-		    S={Unit,No}=pm_config:get_duration(Step),
+		    #pm_duration{value=S}=
+		       pm_config:get_duration(Step),
 		    lists:foreach(fun (EInt) ->
 					  send_event(MOI,MOC,EInt,check_time(Time,EInt,S))
 				  end,Events);

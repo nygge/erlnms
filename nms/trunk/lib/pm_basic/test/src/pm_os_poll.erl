@@ -15,6 +15,7 @@
 	 create_archives/0,
 	 create_counters/0,
 	 create_durations/0,
+	 create_events/0,
 %	 create_file/0,
 	 create_mo_types/0,
 	 create_store_inst/0,
@@ -95,6 +96,10 @@ create_store_inst() ->
     pm_basic:new_store_inst(#pm_store_inst{name={[{ne,"godot"},{cpu,1}],laptop},
 					   store_type=load_avg_std,
 					   backend=rrdtool}).
+
+create_events() ->
+    pm_basic:new_event(#pm_event{id={[{ne,"godot"},{cpu,1}],laptop},
+				 events=[{sec,5}]}).
 
 graph()->
     gen_server:call(?MODULE,graph).
