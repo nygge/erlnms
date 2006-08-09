@@ -2,4 +2,42 @@
 @copyright 2004-2006 Anders Nygren
 @version {@vsn}
 @title Threshold Management
-@doc Threshold Management application.
+@doc
+
+== Contents ==
+<ol>
+  <li>{@section Introduction}</li>
+  <li>{@section Configuration}</li>
+  <li>{@section Events}</li>
+</ol>
+
+== Introduction ==
+The threshold application subscribes to performance measurement data and
+performs threshold checks. When a threshold level is crossed a threshold 
+crossing event is generated.
+
+== Configuration ==
+The threshold configuration is stored in mnesia tables.
+
+=== Command ===
+The command table defines which counters shall be checked for a specific
+managed object and time interval.
+
+`-record(th_cmd,{key,cmds}).'
+
+where key is a tuple
+
+`{SystemType,FDN,MOClass,Resolution}'
+
+and cmds is a list of tuples
+
+`[{Counter,???}]'
+
+It is possible to use wildcards in the key. The wildcards are written as 
+the atom
+
+`` '*' ''
+
+Wildcards can be used in the SystemType and FDN components of the key.
+
+=== Threshold ===

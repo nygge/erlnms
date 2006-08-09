@@ -13,7 +13,9 @@
 %%--------------------------------------------------------------------
 %% Include files
 %%--------------------------------------------------------------------
+%% @headerfile "threshold.hrl"
 -include("threshold.hrl").
+
 %%--------------------------------------------------------------------
 %% External exports
 -export([start_link/0,
@@ -35,12 +37,21 @@
 %% Function: start_link/0
 %% Description: Starts the server
 %%--------------------------------------------------------------------
+%% @spec start_link() -> ok
+%% @doc Start the server.
+%% @end
 start_link() ->
     gen_server:start_link({local, ?SERVER}, ?MODULE, [], []).
 
+%% @spec check_threshold(SysType::atom(),MOInst::fdn(),MOClass::atom(),Counter::atom(),Value::integer() | float(),Step::duration()) -> What
+%% @doc Check the threshold for counter Cnt.
+%% @end
 check_threshold(SysT,MOI,MOC,Cnt,Val,Step) ->
     gen_server:call(?SERVER,{check_threshold,SysT,MOI,MOC,Cnt,Val,Step},infinity).
 
+%% @spec get_cmds(SysT,MOI,MOC,Int) -> What
+%% @doc Get the counters that shall be threshold checked at interval Int.
+%% @end
 get_cmds(SysT,MOI,MOC,Int) ->
     gen_server:call(?SERVER,{get_cmds,SysT,MOI,MOC,Int},infinity).
 
