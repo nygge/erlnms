@@ -3,7 +3,7 @@
 @version {@vsn}
 @title Performance Management Basic functions
 
-@doc PM_Basic is the core component i the Perfomance management area. It provides a model for performance data storage. The actual performance data storage is handled by plugin modules in separate applications. This makes it possible to add different types of storage backends, e.g. RRDtool or a RDBMS.
+@doc PM_Basic is the core component in the Perfomance management area. It provides a model for performance data storage. The actual performance data storage is handled by plugin modules in separate applications. This makes it possible to add different types of storage backends, e.g. RRDtool or a RDBMS.
 
 == Contents ==
 <ol>

@@ -1,15 +1,16 @@
 %%%-------------------------------------------------------------------
-%%% @copyright 2006 Anders
-%%% @author Anders <anders.nygren@gmail.com>
+%%% @copyright 2006 Anders Nygren
+%%% @author Anders Nygren <anders.nygren@gmail.com>
 %%% @doc Public API for pm_basic.
 %%% @end 
-%%% Created :  4 Aug 2006 by Anders <anders.nygren@gmail.com>
+%%% Created :  4 Aug 2006 by Anders Nygren <anders.nygren@gmail.com>
 %%%-------------------------------------------------------------------
 -module(pm_basic).
 
 %%--------------------------------------------------------------------
 %% Include files
 %%--------------------------------------------------------------------
+%% @headerfile "pm_store.hrl"
 -include("pm_store.hrl").
 
 %% API
@@ -54,7 +55,6 @@
 	 fetch/7,
 	 update/4]).
 
-%% @headerfile "pm_store.hrl"
 
 %%====================================================================
 %% API
