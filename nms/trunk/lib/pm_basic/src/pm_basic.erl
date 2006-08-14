@@ -351,7 +351,7 @@ get_events(MOI,MOC) ->
 %% @doc Get the definition of all events.
 %% @end
 get_all_events() ->
-    pm_config:get_all(pm_event).
+    pm_config:get_all_events().
 
 %% @spec get_store_def(Name) -> What
 %% @doc Get the definition of store Name.

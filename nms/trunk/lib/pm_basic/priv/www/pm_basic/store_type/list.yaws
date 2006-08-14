@@ -1,0 +1,8 @@
+<html>
+<h1>Store Type</h1>
+
+<erl>
+out(A) ->
+    {ehtml,yaws_pm_basic:store_type_list()}.
+</erl>
+</html>

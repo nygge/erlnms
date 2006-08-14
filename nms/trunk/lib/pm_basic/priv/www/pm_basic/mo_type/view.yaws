@@ -1,0 +1,10 @@
+<html>
+<h1>MO Type</h1>
+
+<erl>
+out(A) ->
+    Q=yaws_api:parse_query(A),
+    {value,{_,Name}}=lists:keysearch("name",1,Q),
+    {ehtml,yaws_pm_basic:mo_type_view(Name)}.
+</erl>
+</html>

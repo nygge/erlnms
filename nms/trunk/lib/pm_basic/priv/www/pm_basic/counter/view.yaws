@@ -1,0 +1,11 @@
+<html>
+<h1>Counter</h1>
+
+<erl>
+out(A) ->
+    Q=yaws_api:parse_query(A),
+    {value,{_,MOType}}=lists:keysearch("mo_type",1,Q),
+    {value,{_,Name}}=lists:keysearch("name",1,Q),
+    {ehtml,yaws_pm_basic:counter_view(MOType,Name)}.
+</erl>
+</html>

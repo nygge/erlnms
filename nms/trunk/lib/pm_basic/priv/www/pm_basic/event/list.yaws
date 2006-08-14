@@ -1,0 +1,9 @@
+<html>
+<h1>Event</h1>
+
+<erl>
+out(A) ->
+       Aggrs=pm_basic:get_all_events(),
+       {html,f("~p~n",[Aggrs])}.
+</erl>
+</html>

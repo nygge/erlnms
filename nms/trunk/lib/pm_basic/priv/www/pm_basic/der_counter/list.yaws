@@ -1,0 +1,9 @@
+<html>
+<h1>Derived Counters</h1>
+
+<erl>
+out(A) ->
+       Aggrs=pm_basic:get_all_der_counters(),
+       {html,f("~p~n",[Aggrs])}.
+</erl>
+</html>

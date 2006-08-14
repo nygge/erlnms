@@ -1,0 +1,8 @@
+<html>
+<h1>Archives</h1>
+
+<erl>
+out(A) ->
+       {ehtml,yaws_pm_basic:archive_list()}.
+</erl>
+</html>

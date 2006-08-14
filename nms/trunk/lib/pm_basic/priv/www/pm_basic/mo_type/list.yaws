@@ -1,0 +1,8 @@
+<html>
+<h1>MO Types</h1>
+
+<erl>
+out(A) ->
+       {ehtml,yaws_pm_basic:mo_type_list()}.
+</erl>
+</html>

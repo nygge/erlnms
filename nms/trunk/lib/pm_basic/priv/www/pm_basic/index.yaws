@@ -1,0 +1,17 @@
+<html>
+<h1>Performance Management</h1>
+
+<erl>
+out(A) ->
+    {ehtml,[{ul,[],[
+     {li,[],{a,[{href,"aggregate/list.yaws"}],"Aggregate"}},
+     {li,[],{a,[{href,"archive/list.yaws"}],"Archive"}},
+     {li,[],{a,[{href,"counter/list.yaws"}],"Counter"}},
+     {li,[],{a,[{href,"der_counter/list.yaws"}],"Derived Counters"}},
+     {li,[],{a,[{href,"duration/list.yaws"}],"Duration"}},
+     {li,[],{a,[{href,"event/list.yaws"}],"Event"}},
+     {li,[],{a,[{href,"mo_type/list.yaws"}],"MO Type"}},
+     {li,[],{a,[{href,"store_type/list.yaws"}],"Store Type"}}
+     ]}]}.
+</erl>
+</html>
