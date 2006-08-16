@@ -1,9 +1,17 @@
+<erl>
+out(A) ->
+    {yssi,"../top.yaws"}.
+</erl>
 <html>
-<h1>Derived Counters</h1>
 
 <erl>
 out(A) ->
-       Aggrs=pm_basic:get_all_der_counters(),
-       {html,f("~p~n",[Aggrs])}.
+       {ehtml,[{'div', [{id, "main"}],yaws_pm_basic:der_counter_list()}]}.
 </erl>
+<erl>
+out(A) ->
+    {ehtml,[{'div', [{id, "footer"}],{p,[{align,center}],"Erlang NMS"}}]}.
+</erl>
+
+</body>
 </html>

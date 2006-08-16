@@ -1,8 +1,21 @@
+<erl>
+out(A) ->
+    {yssi,"../top.yaws"}.
+</erl>
 <html>
-<h1>Aggregates</h1>
 
 <erl>
 out(A) ->
-    {ehtml,yaws_pm_basic:aggregate_list()}.
+    {ehtml,{'div', [{id, "main"}],yaws_pm_basic:aggregate_list()}}.
 </erl>
+
+<erl>
+out(A) ->
+    {ehtml,[{'div', [{id, "footer"}],
+	     [{span,[{align,right}],"Erlang NMS"},
+	      {span,[{align,left}],"Yaws"}
+	     ]}]}.
+</erl>
+
+</body>
 </html>

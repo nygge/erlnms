@@ -1,8 +1,17 @@
-<html>
-<h1>Counter</h1>
+<erl>
+out(A) ->
+    {yssi,"../top.yaws"}.
+</erl>
 
 <erl>
 out(A) ->
-       {ehtml,yaws_pm_basic:counter_list()}.
+       {ehtml,[{'div', [{id, "main"}],yaws_pm_basic:counter_list()}]}.
 </erl>
+
+<erl>
+out(A) ->
+    {ehtml,[{'div', [{id, "footer"}],{p,[{align,center}],"Erlang NMS"}}]}.
+</erl>
+
+</body>
 </html>
