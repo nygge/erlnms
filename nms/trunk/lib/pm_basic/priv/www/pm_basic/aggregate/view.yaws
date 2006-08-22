@@ -1,5 +1,7 @@
-<html>
-<h1>Aggregate</h1>
+<erl>
+out(A) ->
+    {ssi,"top.ssi","%",[]}.
+</erl>
 
 <erl>
 out(A) ->
@@ -7,4 +9,9 @@ out(A) ->
     {value,{_,Name}}=lists:keysearch("name",1,Q),
     {ehtml,yaws_pm_basic:aggregate_view(Name)}.
 </erl>
-</html>
+
+<erl>
+out(A) ->
+    {ssi,"bottom.ssi","%",[]}.
+</erl>
+

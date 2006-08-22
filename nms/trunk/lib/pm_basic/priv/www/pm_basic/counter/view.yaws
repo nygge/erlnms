@@ -1,6 +1,6 @@
 <erl>
 out(A) ->
-    {yssi,"../top.yaws"}.
+    {ssi,"top.ssi","&",[]}.
 </erl>
 
 <erl>
@@ -13,8 +13,5 @@ out(A) ->
 
 <erl>
 out(A) ->
-    {ehtml,[{'div', [{id, "footer"}],{p,[{align,center}],"Erlang NMS"}}]}.
+   {ssi,"bottom.ssi","%",[]}.
 </erl>
-
-</body>
-</html>

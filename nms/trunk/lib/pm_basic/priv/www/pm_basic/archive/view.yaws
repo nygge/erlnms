@@ -1,7 +1,7 @@
 <erl>
 out(A) ->
-    {yssi,"../top.yaws"}.
-</erl><html>
+    {ssi,"top.ssi","&",[]}.
+</erl>
 
 <erl>
 out(A) ->
@@ -9,10 +9,9 @@ out(A) ->
     {value,{_,Name}}=lists:keysearch("name",1,Q),
     {ehtml,{'div', [{id, "main"}],yaws_pm_basic:archive_view(Name)}}.
 </erl>
+
 <erl>
 out(A) ->
-    {ehtml,[{'div', [{id, "footer"}],{p,[{align,center}],"Erlang NMS"}}]}.
+    {ssi,"bottom.ssi","%",[]}.
 </erl>
 
-</body>
-</html>

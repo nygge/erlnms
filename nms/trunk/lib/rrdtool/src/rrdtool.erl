@@ -29,8 +29,7 @@
 %%	 rrdresize/4,
 %%	 tune/2,
 	 update/2,update/3,update/4,
-	 xport/1,xport_async/1,
-	 subscribe/1
+	 xport/1,xport_async/1
 	]).
  
 %% gen_server callbacks
@@ -186,7 +185,7 @@ info(File,Timeout) when Timeout==infinity; is_integer(Timeout) ->
 %% <p>When Type=dss, returns information about the datasources in the database.</p>
 %% <p>When Type=rra, returns information about the roundrobin archives in the database.</p>
 %% @see rrd_lib:info/3
-info(File,Type) when Type==all; Type==last; Type==dss; Type==rra ->
+info(File,Type) when Type==all; Type==last; Type==dss; Type==rras ->
     gen_server:call(?MODULE,{cmd,info,{File,Type}}).
 
 %% @spec info(File,Type,Timeout) -> Result
@@ -344,14 +343,6 @@ xport(Pars) ->
 
 xport_async(Pars) ->
     gen_server:cast(?MODULE,{cmd,xport_async,{self(),Pars}}).
-
-%% @spec subscribe(Filter) -> Result
-%% Filter     = match_spec
-%% @doc Subscribe to events from rrdtool.
-%% Filter is a match specification, see ?????? for details.
-
-subscribe(Filter) ->
-   subscription_event_h:subscribe(rrdtool_event,self(),Filter).
 
 %%====================================================================
 %% Server functions

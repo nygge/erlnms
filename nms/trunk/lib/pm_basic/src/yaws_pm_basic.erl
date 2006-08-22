@@ -11,6 +11,8 @@
 -import(yaws_api,[f/2]).
 
 -export([aggregate_list/0,
+	 aggregate_new/0,
+	 aggregate_new_post/1,
 	 aggregate_view/1,
 	 archive_list/0,
 	 archive_view/1,
@@ -31,11 +33,14 @@ aggregate_list() ->
     aggregate_list(pm_basic:get_all_aggregates()).
 
 aggregate_list(As) ->
-    {table,[],
+    [{a,[{href,"new.yaws"}],"Add new"},
+     {table,[],
      [{caption,[],"Aggregates"},
       {tr,[],
        [{th,[],Heading}||Heading <- ["Name","CF","XFF","Resolution",
-				     "Duration","Edit","Delete"]]
+				     "Duration",
+%%				     "Edit",
+				     "Delete"]]
       }|
       lists:map(
 	fun (A) ->
@@ -49,11 +54,65 @@ aggregate_list(As) ->
 		  {td,[],{a,[{href,f("../duration/view.yaws?name=~s",
 				     [A#pm_aggregate.duration])}],
 			      A#pm_aggregate.duration}},
-		  {td,[],{a,[{href,f("edit.yaws?name=~s",
-				     [A#pm_aggregate.name])}],"Edit"}},
+%% 		  {td,[],{a,[{href,f("edit.yaws?name=~s",
+%% 				     [A#pm_aggregate.name])}],"Edit"}},
 		  {td,[],{a,[{href,f("delete.yaws?name=~s",
 				     [A#pm_aggregate.name])}],"Delete"}}]}
-	end,lists:keysort(2,As))]}.
+	end,lists:keysort(2,As))]}].
+
+aggregate_new() ->
+    DurOpts=lists:keysort(3,[{option,[],D#pm_duration.name}||D <- pm_basic:get_all_durations()]),
+    [{h2, [], "Create new Aggregate"},
+      {hr},
+      {form, [{action,"new_post.yaws"},{method,post}],
+       [{table, [],
+	 [{tr,[],[{th,[{align,right}],{p,[],"Name"}},
+		  {td,[], {input, [{type,text},{name,name}]}}]},
+
+	  {tr,[],[{th,[{align,right}],{p,[],"CF"}},
+		  {td,[],{select,[{name,cf}],
+			  [{option,[],"Average"},
+			   {option,[],"Last"},
+			   {option,[],"Min"},
+			   {option,[],"Max"}]
+			 }}]},
+
+	  {tr,[],[{th,[{align,right}],{p,[],"XFF"}},
+		  {td,[],{input, [{type,text},{name,xff}]}},
+
+	  {tr,[],[{th,[{align,right}],{p,[],"Resolution"}},
+		  {td,[],{select,[{name,resolution}],
+			 DurOpts}}]},
+
+	  {tr,[],[{th,[{align,right}],{p,[],"Duration"}},
+		  {td,[],{select,[{name,duration}],
+			 DurOpts}},
+		 {td,[],{input, [{type,submit},{value,"Create"}]}}
+		 ]}]}
+	 ]}]}].
+
+aggregate_new_post(A) ->
+    io:format("query=~p~n",[yaws_api:parse_post(A)]),
+    {ok,Name}=yaws_api:getvar(A,"name"),
+    {ok,CF}=yaws_api:getvar(A,"cf"),
+    {ok,XFF}=yaws_api:getvar(A,"xff"),
+    {ok,Res}=yaws_api:getvar(A,"resolution"),
+    {ok,Dur}=yaws_api:getvar(A,"duration"),
+    CF1=mk_cf(CF),
+    XFF1=list_to_float(XFF),
+    pm_basic:new_aggregate(#pm_aggregate{name=Name,cf=CF1,
+					 xff=XFF1,resolution=Res,
+					 duration=Dur}).
+
+
+mk_cf("Average")->
+    'AVERAGE';
+mk_cf("Last") ->
+    'LAST';
+mk_cf("Min") ->
+    'MIN';
+mk_cf("Max") ->
+    'MAX'.
 
 aggregate_view(Name) ->
     A=pm_basic:get_aggregate(Name),
@@ -285,7 +344,7 @@ mo_type_view(Name) ->
 					  [HB])}],HB}},
 		       {td,[{align,right}],f("~p",[Min])},
 		       {td,[{align,right}],f("~p",[Max])},
-		       {td,[],{a,[{href,f("remove.yaws?name=~s,counter=~s",
+		       {td,[],{a,[{href,f("remove.yaws?name=~s&counter=~s",
 					  [Name,C])}],"Remove"}}]}
 	     end,Cs)]}],
     TDCs= [{table,[],
@@ -310,7 +369,7 @@ mo_type_view(Name) ->
 				     [Name,C])}],C}},
 			 {td,[],f("~s",[Expr])},
 			 {td,[],f("~p",[Deps])},
-			 {td,[],{a,[{href,f("remove.yaws?name=~s,counter=~s",
+			 {td,[],{a,[{href,f("remove.yaws?name=~s&counter=~s",
 					    [Name,C])}],"Remove"}}]}
 	       end,DCs)]}],
     [TCs,TDCs].

@@ -662,12 +662,13 @@ deps_exists(Names) when is_list(Names) ->
 		end,
 		true, Names).
 
-exists(Tab,Names) when is_list(Names) ->
+exists_l(Tab,Names) when is_list(Names) ->
     lists:foldr(fun (N,Acc) ->
 			exists(Tab,N) and Acc
 		end,
-		true, Names);
-exists(Tab,Name) when is_atom(Name) ->
+		true, Names).
+
+exists(Tab,Name) ->
     case read_tab(Tab,Name) of
 	Rec when is_tuple(Rec)->
 	    true;
